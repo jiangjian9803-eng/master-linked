@@ -1,6 +1,6 @@
 {
   "name": "master-linked",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Privacy-first outreach workbench",
   "main": "main.cjs",
   "author": {"name": "Jian Jiang", "email": "jiangjian9803-eng@users.noreply.github.com"},
