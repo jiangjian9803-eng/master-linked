@@ -19,7 +19,7 @@
   "build": {
     "appId": "com.masterlinked.app",
     "productName": "Master Linked",
-    "files": ["index.html", "app.js", "styles.css", "manifest.webmanifest", "sw.js", "README.md", "assets/**/*"],
+    "files": ["index.html", "app.js", "styles.css", "manifest.webmanifest", "sw.js", "main.cjs", "README.md", "assets/**/*"],
     "icon": "assets/icons/master-linked-1024.png",
     "mac": {"category": "public.app-category.business", "target": ["dmg", "zip"]},
     "win": {"target": ["nsis", "portable"]},
