@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Privacy-first outreach workbench",
   "main": "main.cjs",
-  "author": "Jian Jiang",
+  "author": {"name": "Jian Jiang", "email": "jiangjian9803-eng@users.noreply.github.com"},
   "license": "MIT",
   "scripts": {
     "start": "electron .",
