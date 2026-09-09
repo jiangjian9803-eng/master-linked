@@ -6,6 +6,10 @@
 
 直接双击 `index.html` 即可使用；部署到 GitHub Pages、Netlify 或任意静态主机也可以直接访问。
 
+## 安装桌面版
+
+安装 Node.js 后，在项目目录执行 `npm install`，然后执行 `npm run start` 预览。使用 `npm run dist` 可生成 macOS、Windows 和 Linux 安装包。
+
 ## CSV 导入
 
 首行建议使用 `姓名,LinkedIn,公司`（也支持英文 `name,linkedin,company`）。

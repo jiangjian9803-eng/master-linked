@@ -1,0 +1,28 @@
+{
+  "name": "master-linked",
+  "version": "0.1.0",
+  "description": "Privacy-first outreach workbench",
+  "main": "main.cjs",
+  "author": "Jian Jiang",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac --win --linux",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.masterlinked.app",
+    "productName": "Master Linked",
+    "files": ["index.html", "app.js", "styles.css", "manifest.webmanifest", "sw.js", "README.md", "assets/**/*"],
+    "icon": "assets/icons/master-linked-1024.png",
+    "mac": {"category": "public.app-category.business", "target": ["dmg", "zip"]},
+    "win": {"target": ["nsis", "portable"]},
+    "linux": {"target": ["AppImage", "deb"], "category": "Office"}
+  }
+}
