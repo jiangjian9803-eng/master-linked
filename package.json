@@ -7,12 +7,15 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "dist": "electron-builder --publish never --mac --win --linux",
     "dist:mac": "electron-builder --publish never --mac",
     "dist:win": "electron-builder --publish never --win",
     "dist:linux": "electron-builder --publish never --linux"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.8.4",
     "electron": "^38.1.0",
     "electron-builder": "^26.0.12"
   },
