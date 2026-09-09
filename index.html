@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a66c2" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>Master Linked</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div><span class="logo">M</span><strong>Master Linked</strong><small>开源外联工作台</small></div>
+    <button id="exportBtn" class="secondary">导出数据</button>
+  </header>
+  <main class="layout">
+    <aside class="sidebar">
+      <button class="nav active" data-view="contacts">联系人</button>
+      <button class="nav" data-view="template">消息模板</button>
+      <button class="nav" data-view="settings">设置</button>
+      <div class="side-note">数据只保存在本机浏览器。发送动作由你本人确认完成。</div>
+    </aside>
+    <section class="content">
+      <div id="contactsView" class="view">
+        <div class="page-head"><div><h1>联系人</h1><p id="stats">0 位联系人</p></div><div class="actions"><label class="button secondary">导入 CSV<input id="importInput" type="file" accept=".csv,text/csv" hidden></label><button id="addBtn">新增联系人</button></div></div>
+        <div class="toolbar"><input id="search" placeholder="搜索姓名、公司或状态" /><select id="statusFilter"><option value="all">全部状态</option><option value="pending">待联系</option><option value="sent">已发送</option><option value="skip">已跳过</option></select></div>
+        <div id="contactList" class="cards"></div>
+      </div>
+      <div id="templateView" class="view hidden"><div class="page-head"><div><h1>消息模板</h1><p>使用 <code>{GivenName}</code> 自动替换称呼</p></div><button id="saveTemplate">保存模板</button></div><textarea id="templateText" class="template"></textarea><div class="preview"><h3>预览</h3><div id="templatePreview"></div></div></div>
+      <div id="settingsView" class="view hidden"><div class="page-head"><div><h1>设置</h1><p>本地应用偏好</p></div></div><div class="panel"><h3>数据管理</h3><button id="clearBtn" class="danger">清空本地数据</button><p class="muted">清空前请先导出备份。此操作不可撤销。</p></div></div>
+    </section>
+  </main>
+  <dialog id="contactDialog"><form method="dialog" id="contactForm"><h2 id="dialogTitle">新增联系人</h2><input id="nameInput" required placeholder="姓名" /><input id="linkedinInput" placeholder="LinkedIn 链接" /><input id="companyInput" placeholder="公司 / 学校" /><menu><button value="cancel" class="secondary">取消</button><button id="saveContact" value="default">保存</button></menu></form></dialog>
+  <script src="app.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body>
+</html>
