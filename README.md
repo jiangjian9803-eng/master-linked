@@ -9,6 +9,7 @@
 ## 安装桌面版
 
 安装 Node.js 后，在项目目录执行 `npm install`，然后执行 `npm run start` 预览。使用 `npm run dist` 可生成 macOS、Windows 和 Linux 安装包。
+项目已配置 GitHub Actions；在 GitHub Actions 页面手动运行 `Build desktop installers`，即可下载对应平台安装包。
 
 ## CSV 导入
 
