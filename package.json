@@ -7,10 +7,10 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --mac --win --linux",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux"
+    "dist": "electron-builder --publish never --mac --win --linux",
+    "dist:mac": "electron-builder --publish never --mac",
+    "dist:win": "electron-builder --publish never --win",
+    "dist:linux": "electron-builder --publish never --linux"
   },
   "devDependencies": {
     "electron": "^38.1.0",
