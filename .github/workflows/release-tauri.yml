@@ -59,7 +59,15 @@ jobs:
           path: release-assets
           pattern: master-linked-*
           merge-multiple: true
+      - name: Collect installer files
+        shell: bash
+        run: |
+          mkdir -p release-flat
+          find release-assets -type f \( \
+            -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o \
+            -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \
+          \) -exec cp {} release-flat/ \;
       - uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*
+          files: release-flat/*
           generate_release_notes: true
