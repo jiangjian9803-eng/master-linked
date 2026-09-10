@@ -83,7 +83,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           for i in {1..10}; do
-            count=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets | length')
+            count=$(curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}" \
+              | jq '.assets | length')
             echo "Release assets detected: $count"
             if [ "$count" -ge 3 ]; then exit 0; fi
             sleep 3
