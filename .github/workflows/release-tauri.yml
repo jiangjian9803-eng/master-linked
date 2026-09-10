@@ -68,7 +68,25 @@ jobs:
             -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o \
             -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \
           \) -exec cp {} release-flat/ \;
+          echo 'Collected installers:'
+          find release-flat -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
+          test "$(find release-flat -maxdepth 1 -type f | wc -l | tr -d ' ')" -ge 3
+          test -n "$(find release-flat -maxdepth 1 -type f -name '*.dmg' -size +0c -print -quit)"
+          test -n "$(find release-flat -maxdepth 1 -type f \( -name '*.msi' -o -name '*.exe' \) -size +0c -print -quit)"
+          test -n "$(find release-flat -maxdepth 1 -type f \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) -size +0c -print -quit)"
       - uses: softprops/action-gh-release@v2
         with:
           files: release-flat/*
           generate_release_notes: true
+      - name: Verify published release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in {1..10}; do
+            count=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets | length')
+            echo "Release assets detected: $count"
+            if [ "$count" -ge 3 ]; then exit 0; fi
+            sleep 3
+          done
+          echo 'Release was created but expected installer assets were not found.'
+          exit 1
