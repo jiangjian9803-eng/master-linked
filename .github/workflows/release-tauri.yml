@@ -52,6 +52,7 @@ jobs:
 
   release:
     needs: build
+    if: ${{ needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
