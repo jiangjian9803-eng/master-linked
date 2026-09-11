@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>Master Linked</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>.map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.map-stat,.map-panel{background:#fff;border:1px solid #e4eaf1;border-radius:10px;padding:18px}.map-stat span{display:block;color:#718096;font-size:13px}.map-stat strong{display:block;color:#0a66c2;font-size:28px;margin-top:6px}.map-panel{margin-bottom:18px}.map-panel h2{font-size:17px;margin:0 0 14px}.company-map{display:grid;gap:10px}.company-row{display:grid;grid-template-columns:minmax(120px,1fr) 3fr 42px;gap:10px;align-items:center;font-size:13px}.company-bar{height:10px;background:#e8f2fc;border-radius:99px;overflow:hidden}.company-bar i{display:block;height:100%;background:#0a66c2;border-radius:99px}.map-search{width:100%;border:1px solid #ccd6e2;border-radius:7px;padding:10px 12px;font-size:14px;margin-bottom:12px}.map-people{display:grid;gap:8px}.map-person{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #edf0f4;border-radius:7px;cursor:pointer}.map-person:hover{border-color:#0a66c2;background:#f8fbff}.map-person small{color:#718096}.map-person .status{align-self:center}.person-detail{margin-top:14px;padding:16px;border:1px solid #dbe5ef;border-radius:8px;line-height:1.8;min-height:70px}@media(max-width:700px){.map-grid{grid-template-columns:1fr}.company-row{grid-template-columns:1fr 2fr 35px}}</style>
 </head>
 <body>
   <header class="topbar">
@@ -16,6 +17,7 @@
   <main class="layout">
     <aside class="sidebar">
       <button class="nav active" data-view="contacts">联系人</button>
+      <button class="nav" data-view="connections-map">Connections Map</button>
       <button class="nav" data-view="template">消息模板</button>
       <button class="nav" data-view="settings">设置</button>
       <div class="side-note">数据只保存在本机浏览器。发送动作由你本人确认完成。</div>
@@ -27,11 +29,12 @@
         <p id="batchInfo" class="muted">本批已选择 0 人（建议每批不超过 5 人）</p>
         <div id="contactList" class="cards"></div>
       </div>
+      <div id="connections-mapView" class="view hidden"><div class="page-head"><div><h1>Connections Map</h1><p>你的联系人网络与人才分布</p></div></div><div class="map-grid"><div class="map-stat"><span>联系人总数</span><strong id="mapTotal">0</strong></div><div class="map-stat"><span>覆盖公司 / 学校</span><strong id="mapCompanies">0</strong></div><div class="map-stat"><span>已发送</span><strong id="mapSent">0</strong></div></div><div class="map-panel"><h2>按公司 / 学校分布</h2><div id="companyMap" class="company-map"></div></div><div class="map-panel"><h2>人才档案</h2><input id="mapSearch" class="map-search" placeholder="搜索姓名、公司、职位" /><div id="mapPeople" class="map-people"></div><div id="personDetail" class="person-detail muted">点击一位联系人查看完整档案。</div></div></div>
       <div id="templateView" class="view hidden"><div class="page-head"><div><h1>消息模板</h1><p>使用 <code>{GivenName}</code> 自动替换称呼</p></div><button id="saveTemplate">保存模板</button></div><textarea id="templateText" class="template"></textarea><div class="preview"><h3>预览</h3><div id="templatePreview"></div></div></div>
       <div id="settingsView" class="view hidden"><div class="page-head"><div><h1>设置</h1><p>本地应用偏好</p></div></div><div class="panel"><h3>数据管理</h3><button id="clearBtn" class="danger">清空本地数据</button><p class="muted">清空前请先导出备份。此操作不可撤销。</p></div></div>
     </section>
   </main>
-  <dialog id="contactDialog"><form method="dialog" id="contactForm"><h2 id="dialogTitle">新增联系人</h2><input id="nameInput" required placeholder="姓名" /><input id="linkedinInput" placeholder="LinkedIn 链接" /><input id="companyInput" placeholder="公司 / 学校" /><menu><button value="cancel" class="secondary">取消</button><button id="saveContact" value="default">保存</button></menu></form></dialog>
+  <dialog id="contactDialog"><form method="dialog" id="contactForm"><h2 id="dialogTitle">新增联系人</h2><input id="nameInput" required placeholder="姓名" /><input id="linkedinInput" placeholder="LinkedIn 链接" /><input id="companyInput" placeholder="公司 / 学校" /><input id="positionInput" placeholder="职位" /><input id="workYearsInput" placeholder="工作年限（如 8 年）" /><input id="workStatusInput" placeholder="工作状态（在职 / 求职中 / 学术界）" /><input id="focusInput" placeholder="技术方向" /><menu><button value="cancel" class="secondary">取消</button><button id="saveContact" value="default">保存</button></menu></form></dialog>
   <script src="app.js"></script>
   <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
