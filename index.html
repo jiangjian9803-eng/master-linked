@@ -23,7 +23,8 @@
     <section class="content">
       <div id="contactsView" class="view">
         <div class="page-head"><div><h1>联系人</h1><p id="stats">0 位联系人</p></div><div class="actions"><label class="button secondary">导入 CSV<input id="importInput" type="file" accept=".csv,text/csv" hidden></label><button id="addBtn">新增联系人</button></div></div>
-        <div class="toolbar"><input id="search" placeholder="搜索姓名、公司或状态" /><select id="statusFilter"><option value="all">全部状态</option><option value="pending">待联系</option><option value="sent">已发送</option><option value="skip">已跳过</option></select></div>
+        <div class="toolbar"><input id="search" placeholder="搜索姓名、公司或状态" /><select id="statusFilter"><option value="all">全部状态</option><option value="pending">待联系</option><option value="sent">已发送</option><option value="skip">已跳过</option></select><button id="selectFiveBtn" class="secondary">选择前 5 位待联系</button><button id="clearSelectionBtn" class="secondary">清除选择</button></div>
+        <p id="batchInfo" class="muted">本批已选择 0 人（建议每批不超过 5 人）</p>
         <div id="contactList" class="cards"></div>
       </div>
       <div id="templateView" class="view hidden"><div class="page-head"><div><h1>消息模板</h1><p>使用 <code>{GivenName}</code> 自动替换称呼</p></div><button id="saveTemplate">保存模板</button></div><textarea id="templateText" class="template"></textarea><div class="preview"><h3>预览</h3><div id="templatePreview"></div></div></div>
