@@ -2,3 +2,4 @@
 /* Word mail-merge file fields */
 .word-merge .field{margin:14px 0}.word-merge .field label{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-weight:600}.word-merge .field input[type=file]{flex:1;min-width:260px}
 .card-main[data-action="copy-message"]{cursor:pointer}
+.meeting-checks{margin:10px 0 14px;padding:12px 14px;background:#f7f9fc;border:1px solid #e4eaf1;border-radius:8px;line-height:1.8;font-size:13px}
