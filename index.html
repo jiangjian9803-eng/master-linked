@@ -39,6 +39,7 @@
       <div id="meeting-recordsView" class="view hidden"><div class="page-head"><div><h1>会议记录</h1><p>录音、转写并按模板整理会议纪要</p></div></div><div class="panel meeting-panel"><h2>第一步：录音或粘贴文字</h2><div class="actions"><button id="recordStartBtn" class="button">开始录音</button><button id="recordStopBtn" class="secondary" disabled>停止录音</button></div><p id="recordStatus" class="muted">录音仅保存在本机；也可以直接粘贴已有转写。</p><a id="downloadRecording" class="button secondary hidden" download="meeting-recording.webm">下载录音</a><textarea id="meetingTranscript" class="template" placeholder="在这里粘贴会议转写内容，或使用录音后补充文字"></textarea><h2>第二步：会议纪要模板</h2><textarea id="meetingTemplate" class="template">会议主题：\n会议日期：\n\n核心结论：\n\n重点事项与负责人：\n- \n\n时间节点：\n- \n\n后续跟进：\n- </textarea><div class="actions"><button id="summarizeMeetingBtn" class="button">按模板生成会议纪要</button><button id="saveMeetingBtn" class="secondary">保存本条纪要</button></div><h2>会议纪要</h2><textarea id="meetingSummary" class="template" placeholder="生成后的会议纪要会显示在这里"></textarea><p class="muted">录音在本机完成；自动转文字取决于浏览器支持，不影响录音和保存。</p></div></div>
       <div id="contactout-chatgptView" class="view hidden">
         <div class="page-head"><div><h1>ContactOut with ChatGPT</h1><p>把 ContactOut 官方 MCP 连接到 ChatGPT</p></div></div>
+        <div class="contactout-production-warning"><strong>使用前必读</strong><span>此功能必须使用 ContactOut Production API Key，并开通对应的 People Search / Data Enrichment 权限。Sample API Key 只能返回示例数据，无法获得可靠的真实候选人或私人邮箱。</span></div>
         <div class="contactout-purpose"><strong>可以做什么？</strong><p>连接后，可让 ChatGPT 根据职位、技能、公司和地区等关键词批量搜索候选人，并导出候选人名单。</p><div class="contactout-flow"><span>1. 连接 ContactOut</span><b>→</b><span>2. 填写关键词</span><b>→</b><span>3. ChatGPT 搜索</span><b>→</b><span>4. 粘贴结果</span><b>→</b><span>5. 导出 CSV</span></div></div>
         <div class="panel contactout-panel">
           <div class="contactout-badge"><span>CO</span><div><strong>ContactOut MCP</strong><small>官方远程 MCP · 无需在本站保存 API key</small></div></div>
@@ -77,8 +78,8 @@
           </details>
           <section class="contactout-workbench co-email-batch">
             <h2>批量补全私人邮箱</h2>
-            <p class="co-web-only"><strong>采用网页端 CSV 方式</strong><span>Master Linked 不直接调用 ContactOut API，也不需要在这里填写 Production Key。</span></p>
-            <p class="muted">适合已有一批 LinkedIn 账号的情况。Master Linked 负责整理和合并文件；真实邮箱由 ContactOut 网页端补全。只保留 ContactOut 实际返回的私人邮箱，没有结果统一写“未公开”，不会用工作邮箱代替。</p>
+            <p class="co-web-only"><strong>需要 Production API 权限</strong><span>没有 ContactOut Production API Key 或 Data Enrichment 权限时，此流程无法取得真实私人邮箱。</span></p>
+            <p class="muted">适合已有一批 LinkedIn 账号且已开通批量补全权限的情况。只保留 ContactOut 实际返回的私人邮箱，没有结果统一写“未公开”，不会用工作邮箱代替。</p>
             <div class="co-batch-step"><strong>1. 导入 LinkedIn 名单</strong><p>上传 CSV，或把 LinkedIn 链接每行粘贴一个。系统会自动去重。</p><input id="coLinkedinFile" type="file" accept=".csv,.txt,text/csv,text/plain"><textarea id="coLinkedinPaste" class="contactout-output result-input" placeholder="https://www.linkedin.com/in/person-1&#10;https://www.linkedin.com/in/person-2"></textarea><button id="coBuildUploadCsv" type="button">生成 ContactOut 上传 CSV</button><p id="coBatchStatus" class="muted" role="status">尚未导入 LinkedIn 名单。</p></div>
             <div class="co-batch-step"><strong>2. 在 ContactOut 网页端补全</strong><p>把上一步生成的 CSV 上传到 ContactOut 网页端，完成补全后下载结果 CSV。</p></div>
             <div class="co-batch-step"><strong>3. 导回 ContactOut 结果</strong><p>把 ContactOut 网页端下载的结果 CSV 上传到这里。</p><input id="coReturnedFile" type="file" accept=".csv,text/csv"><button id="coMergeReturned" class="secondary" type="button">解析并合并私人邮箱</button></div>
