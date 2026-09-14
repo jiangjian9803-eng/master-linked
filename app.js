@@ -35,31 +35,12 @@ const meetingActionStatus=document.createElement('p');meetingActionStatus.id='me
 let meetingRestartTimer=null;$('#recordStartBtn')?.addEventListener('click',()=>{clearInterval(meetingRestartTimer);meetingRestartTimer=setInterval(()=>{if(meetingRecorder?.state==='recording'&&meetingRecognition){try{meetingRecognition.start()}catch(e){}}},5000)});$('#recordStopBtn')?.addEventListener('click',()=>{clearInterval(meetingRestartTimer);meetingRestartTimer=null});
 $('#meetingSetupBtn')?.addEventListener('click',()=>{const p=$('#meetingSetupStatus');let n=0;const timer=setInterval(()=>{if(!p||p.textContent.startsWith('检测完成')){clearInterval(timer);if(p)p.className=p.textContent.includes('可以录音')?'meeting-status success':'meeting-status error'}if(++n>30)clearInterval(timer)},200)});
 
-// ContactOut 官方 MCP 连接向导。凭据只在 ContactOut 的授权页面输入。
-$('#copyContactoutMcp')?.addEventListener('click',async()=>{
-  const url=$('#contactoutMcpUrl').value;
-  try{
-    await navigator.clipboard.writeText(url);
-    $('#contactoutCopyStatus').textContent='✓ MCP 地址已复制。此地址供工作区管理员或插件开发者配置。';
-  }catch{
-    $('#contactoutMcpUrl').select();
-    $('#contactoutCopyStatus').textContent='请按 Ctrl/Cmd+C 复制已选中的 MCP 地址。';
-  }
-});
 document.querySelectorAll('.prompt-copy').forEach(button=>button.addEventListener('click',async()=>{
   try{
     await navigator.clipboard.writeText(button.dataset.prompt);
-    $('#contactoutCopyStatus').textContent='✓ 示例提示词已复制，可以粘贴到 ChatGPT 测试连接。';
+    $('#contactoutSearchStatus').textContent='✓ 示例提示词已复制，可以粘贴到 ChatGPT。';
   }catch{
-    $('#contactoutCopyStatus').textContent='浏览器未允许剪贴板访问，请手动复制提示词。';
-  }
-}));
-document.querySelectorAll('.copy-install-command').forEach(button=>button.addEventListener('click',async()=>{
-  try{
-    await navigator.clipboard.writeText(button.dataset.copyText);
-    $('#contactoutInstallStatus').textContent='✓ 安装命令已复制，请粘贴到终端运行。';
-  }catch{
-    $('#contactoutInstallStatus').textContent='浏览器未允许剪贴板访问，请手动选择并复制命令。';
+    $('#contactoutSearchStatus').textContent='浏览器未允许剪贴板访问，请手动复制提示词。';
   }
 }));
 
