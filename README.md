@@ -25,3 +25,7 @@
 - OAuth 登录（仅在有官方授权接口时接入）
 
 本项目不绕过 LinkedIn 的安全验证，也不模拟批量点击或自动发送。
+
+## ContactOut with ChatGPT
+
+侧栏“会议记录”下方提供 ContactOut 官方 MCP 的 ChatGPT 接入向导。使用的远程 MCP 地址为 `https://contactout.com/mcp`。API token 只应在 ContactOut 的授权流程中输入，不会保存在本站或仓库中。ChatGPT 自定义 MCP App 的可用性取决于套餐和工作区权限。

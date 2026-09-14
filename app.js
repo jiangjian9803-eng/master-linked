@@ -35,6 +35,26 @@ const meetingActionStatus=document.createElement('p');meetingActionStatus.id='me
 let meetingRestartTimer=null;$('#recordStartBtn')?.addEventListener('click',()=>{clearInterval(meetingRestartTimer);meetingRestartTimer=setInterval(()=>{if(meetingRecorder?.state==='recording'&&meetingRecognition){try{meetingRecognition.start()}catch(e){}}},5000)});$('#recordStopBtn')?.addEventListener('click',()=>{clearInterval(meetingRestartTimer);meetingRestartTimer=null});
 $('#meetingSetupBtn')?.addEventListener('click',()=>{const p=$('#meetingSetupStatus');let n=0;const timer=setInterval(()=>{if(!p||p.textContent.startsWith('检测完成')){clearInterval(timer);if(p)p.className=p.textContent.includes('可以录音')?'meeting-status success':'meeting-status error'}if(++n>30)clearInterval(timer)},200)});
 
+// ContactOut 官方 MCP 连接向导。凭据只在 ContactOut 的授权页面输入。
+$('#copyContactoutMcp')?.addEventListener('click',async()=>{
+  const url=$('#contactoutMcpUrl').value;
+  try{
+    await navigator.clipboard.writeText(url);
+    $('#contactoutCopyStatus').textContent='✓ MCP 地址已复制。现在到 ChatGPT 的 Apps 设置中粘贴。';
+  }catch{
+    $('#contactoutMcpUrl').select();
+    $('#contactoutCopyStatus').textContent='请按 Ctrl/Cmd+C 复制已选中的 MCP 地址。';
+  }
+});
+document.querySelectorAll('.prompt-copy').forEach(button=>button.addEventListener('click',async()=>{
+  try{
+    await navigator.clipboard.writeText(button.dataset.prompt);
+    $('#contactoutCopyStatus').textContent='✓ 示例提示词已复制，可以粘贴到 ChatGPT 测试连接。';
+  }catch{
+    $('#contactoutCopyStatus').textContent='浏览器未允许剪贴板访问，请手动复制提示词。';
+  }
+}));
+
 // 兼容 LinkedIn 原生 Connections.csv：First Name、Last Name、URL、Company、Position。
 $('#importInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;const text=await file.text();const lines=text.split(/\r?\n/).filter(Boolean);const parse=l=>l.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(x=>x.replace(/^\"|\"$/g,'').trim());const head=parse(lines.shift()).map(x=>x.toLowerCase());const idx=ps=>head.findIndex(x=>ps.some(p=>p.test(x)));let added=0;for(const line of lines){const r=parse(line),first=r[idx([/first name/,/^first$/,/名/])]||'',last=r[idx([/last name/,/^last$/,/姓/])]||'',name=first&&last?`${first} ${last}`:(r[idx([/^name$/, /姓名/])]||first||r[0]),linkedin=r[idx([/linkedin/,/^url$/, /profile url/,/个人主页/])]||'',company=r[idx([/company/,/公司/,/学校/])]||'',position=r[idx([/position/,/title/,/职位/])]||'';if(name&&!state.contacts.some(c=>c.name===name&&c.linkedin===linkedin)){state.contacts.push({id:crypto.randomUUID(),name,linkedin,company,position,status:'pending'});added++}}save();render();e.target.value='';alert(`导入完成：新增 ${added} 位联系人。`)};
 

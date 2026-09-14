@@ -18,7 +18,7 @@ function createWindow() {
 
   win.loadFile(path.join(__dirname, 'index.html'));
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https:\/\/([\w-]+\.)?linkedin\.com\//i.test(url)) shell.openExternal(url);
+    if (/^https:\/\/([\w-]+\.)?(linkedin\.com|chatgpt\.com|contactout\.com)\//i.test(url)) shell.openExternal(url);
     return { action: 'deny' };
   });
 }
