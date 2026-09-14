@@ -33,3 +33,5 @@
 该模块还提供批量搜索工作台：根据职位、地区、公司、技能和人数生成结构化 ChatGPT 搜索指令，解析 ChatGPT/ContactOut 返回的 JSON，预览候选人、去重加入本地联系人并导出 UTF-8 CSV。启用 `reveal_info` 前会明确提示联系方式额度消耗。
 
 新版 ChatGPT/Codex 客户端优先从 `Settings → Plugins` 查找并连接服务。自定义 MCP/App 管理入口仅在符合条件且获得相应权限的工作区中显示；若插件目录没有 ContactOut，需要工作区管理员添加远程 MCP，或另行安装本地自定义插件。
+
+工作台内置经过验证的三分钟安装流程，使用公开 marketplace `jiangjian9803-eng/contactout-chatgpt-plugin`。它解释 Developer mode 只是安全开关，提供可复制的 marketplace/plugin 安装命令、源码链接、重启和首次授权步骤。

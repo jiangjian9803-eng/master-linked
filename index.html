@@ -41,13 +41,18 @@
         <div class="page-head"><div><h1>Contact out with ChatGPT</h1><p>把 ContactOut 官方 MCP 连接到 ChatGPT</p></div></div>
         <div class="panel contactout-panel">
           <div class="contactout-badge"><span>CO</span><div><strong>ContactOut MCP</strong><small>官方远程 MCP · 无需在本站保存 API key</small></div></div>
-          <h2>连接步骤</h2>
+          <h2>三分钟安装（已验证）</h2>
           <ol class="setup-steps">
-            <li>在你当前的 ChatGPT/Codex 设置页点击左侧 <strong>Plugins</strong>。</li>
-            <li>在插件目录搜索 <strong>ContactOut</strong>；如果能够找到，点击安装并按提示连接账户。</li>
-            <li>如果插件目录没有 ContactOut，你当前的个人界面不能直接粘贴任意 MCP 地址。需要由符合条件的 Business、Enterprise/Edu 工作区管理员添加，或安装本地自定义插件。</li>
-            <li>管理员添加时使用下面的官方 MCP Server URL，然后按照 ContactOut 页面提示使用 API token 授权。</li>
+            <li>使用安装了 Codex CLI 的 ChatGPT 桌面版；在 <strong>Settings → Security and login</strong> 中打开 <strong>Developer mode</strong>。</li>
+            <li>打开终端，依次运行下面两条命令。它们会添加公开插件源并安装 ContactOut 插件。</li>
+            <li>完全退出并重新打开 ChatGPT，然后前往 <strong>Settings → Plugins → Installed</strong>，确认出现 <strong>ContactOut with ChatGPT</strong>。</li>
+            <li>新建聊天并首次调用 ContactOut；出现授权页面时，再输入你自己的 ContactOut API token。</li>
           </ol>
+          <div class="install-command"><code>codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main">复制</button></div>
+          <div class="install-command"><code>codex plugin add contactout-chatgpt@contactout-tools</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin add contactout-chatgpt@contactout-tools">复制</button></div>
+          <p id="contactoutInstallStatus" class="muted" role="status">插件代码公开可审查，安装过程中不会把 API key 写入 GitHub。</p>
+          <div class="actions contactout-actions"><a class="button secondary" href="https://github.com/jiangjian9803-eng/contactout-chatgpt-plugin" target="_blank" rel="noopener">查看插件源码</a></div>
+          <details class="alternate-install"><summary>如果公开插件目录以后已经收录 ContactOut</summary><p>进入 <strong>Settings → Plugins → Browse plugins</strong> 搜索 ContactOut，直接安装即可，不需要运行终端命令。</p></details>
           <label class="mcp-url-label" for="contactoutMcpUrl">MCP Server URL</label>
           <div class="mcp-url-row"><input id="contactoutMcpUrl" value="https://contactout.com/mcp" readonly><button id="copyContactoutMcp" type="button">复制地址</button></div>
           <p id="contactoutCopyStatus" class="muted" role="status">你的 API key 不会写入网页、localStorage 或 GitHub 仓库。</p>
@@ -78,7 +83,7 @@
             <button class="prompt-copy secondary" type="button" data-prompt="使用 ContactOut，查找多伦多地区的高级机器学习工程师，并返回姓名、公司、职位和 LinkedIn 链接。先不要消耗联系方式额度。">搜索候选人</button>
             <button class="prompt-copy secondary" type="button" data-prompt="使用 ContactOut 查询我的 API 使用情况和剩余额度。">查询剩余额度</button>
           </div>
-          <p class="contactout-note">你截图中的正确入口是 Settings → Plugins，不是 Settings → Apps。只有符合条件且获得管理员权限的工作区才会显示自定义 MCP/App 管理入口；本站无法替你开启账户中不存在的权限。</p>
+          <p class="contactout-note">Developer mode 菜单项只会打开安全设置中的开关，不是 MCP 地址输入页面。ContactOut 当前不在公开插件目录时，请使用上面的 marketplace 安装方式。插件装好后要新建聊天才会加载 MCP 工具。</p>
         </div>
       </div>
       <div id="templateView" class="view hidden"><div class="page-head"><div><h1>消息模板</h1><p>使用 <code>{GivenName}</code> 自动替换称呼</p></div><div class="actions"><button id="copyTemplateBtn" class="secondary" aria-label="复制模板">复制模板</button><button id="saveTemplate">保存模板</button></div></div><textarea id="templateText" class="template"></textarea><div class="preview"><h3>预览</h3><div id="templatePreview"></div></div></div>

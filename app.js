@@ -40,7 +40,7 @@ $('#copyContactoutMcp')?.addEventListener('click',async()=>{
   const url=$('#contactoutMcpUrl').value;
   try{
     await navigator.clipboard.writeText(url);
-    $('#contactoutCopyStatus').textContent='✓ MCP 地址已复制。现在到 ChatGPT 的 Apps 设置中粘贴。';
+    $('#contactoutCopyStatus').textContent='✓ MCP 地址已复制。此地址供工作区管理员或插件开发者配置。';
   }catch{
     $('#contactoutMcpUrl').select();
     $('#contactoutCopyStatus').textContent='请按 Ctrl/Cmd+C 复制已选中的 MCP 地址。';
@@ -52,6 +52,14 @@ document.querySelectorAll('.prompt-copy').forEach(button=>button.addEventListene
     $('#contactoutCopyStatus').textContent='✓ 示例提示词已复制，可以粘贴到 ChatGPT 测试连接。';
   }catch{
     $('#contactoutCopyStatus').textContent='浏览器未允许剪贴板访问，请手动复制提示词。';
+  }
+}));
+document.querySelectorAll('.copy-install-command').forEach(button=>button.addEventListener('click',async()=>{
+  try{
+    await navigator.clipboard.writeText(button.dataset.copyText);
+    $('#contactoutInstallStatus').textContent='✓ 安装命令已复制，请粘贴到终端运行。';
+  }catch{
+    $('#contactoutInstallStatus').textContent='浏览器未允许剪贴板访问，请手动选择并复制命令。';
   }
 }));
 
