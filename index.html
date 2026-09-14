@@ -42,6 +42,9 @@
         <div class="contactout-purpose"><strong>可以做什么？</strong><p>连接后，可让 ChatGPT 根据职位、技能、公司和地区等关键词批量搜索候选人，并导出候选人名单。</p><div class="contactout-flow"><span>1. 连接 ContactOut</span><b>→</b><span>2. 填写关键词</span><b>→</b><span>3. ChatGPT 搜索</span><b>→</b><span>4. 粘贴结果</span><b>→</b><span>5. 导出 CSV</span></div></div>
         <div class="panel contactout-panel">
           <div class="contactout-badge"><span>CO</span><div><strong>ContactOut MCP</strong><small>官方远程 MCP · 无需在本站保存 API key</small></div></div>
+          <details class="contactout-collapsible">
+            <summary><span>首次连接与 ChatGPT 批量搜索</span><small>点击展开 / 收起全部内容</small></summary>
+            <div class="contactout-collapsible-body">
           <h2>首次连接：照着做即可</h2>
           <div class="contactout-guide-cards">
             <section class="contactout-guide-step"><div class="step-copy"><span class="step-number">1</span><div><h3>打开开发者模式</h3><p><strong>Settings → Security and login → Developer mode</strong>，把开关打开。</p></div></div><img src="assets/guides/chatgpt-developer-mode-on.png" alt="ChatGPT Developer mode 已打开"></section>
@@ -70,6 +73,8 @@
             <p id="contactoutSearchStatus" class="muted" role="status">尚未生成搜索任务。</p>
             <div id="contactoutResults" class="contactout-results"></div>
           </section>
+            </div>
+          </details>
           <section class="contactout-workbench co-email-batch">
             <h2>批量补全私人邮箱</h2>
             <p class="muted">适合已有一批 LinkedIn 账号的情况。只保留 ContactOut 实际返回的私人邮箱；没有结果统一写“未公开”，不会用工作邮箱代替。</p>
