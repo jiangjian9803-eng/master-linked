@@ -61,12 +61,15 @@ $('#openContactoutChat')?.addEventListener('click',()=>{const prompt=buildContac
 function candidateFrom(raw,key=''){
   const info=raw.contact_info||{},emails=info.emails||raw.emails||[],personal=info.personal_emails||raw.personal_emails||[],work=info.work_emails||raw.work_emails||[];
   const firstExperience=Array.isArray(raw.experience)?raw.experience[0]||{}:{};
-  return {name:raw.name||raw.full_name||[raw.first_name,raw.last_name].filter(Boolean).join(' ')||'',title:raw.title||raw.job_title||firstExperience.title||'',company:raw.company?.name||raw.company_name||firstExperience.company||raw.company||'',location:typeof raw.location==='string'?raw.location:(raw.location?.name||''),linkedin:raw.linkedin||raw.linkedin_url||raw.li_vanity||raw.url||key||'',work_email:raw.work_email||work[0]||'',personal_email:raw.personal_email||personal[0]||'',email:raw.email||(Array.isArray(emails)?emails[0]:'')||'',phone:raw.phone||(info.phones||raw.phones||[])[0]||'',skills:Array.isArray(raw.skills)?raw.skills.join('; '):(raw.skills||'')};
+  const vanity=raw.li_vanity||'',linkedin=raw.linkedin||raw.linkedin_url||(vanity?(/^https?:\/\//i.test(vanity)?vanity:`https://www.linkedin.com/in/${String(vanity).replace(/^\/+|\/+$/g,'')}`):'')||raw.url||key||'';
+  return {name:raw.name||raw.full_name||[raw.first_name,raw.last_name].filter(Boolean).join(' ')||'',title:raw.title||raw.job_title||firstExperience.title||'',company:raw.company?.name||raw.company_name||firstExperience.company||raw.company||'',location:typeof raw.location==='string'?raw.location:(raw.location?.name||''),linkedin,work_email:raw.work_email||work[0]||'',personal_email:raw.personal_email||personal[0]||'',email:raw.email||(Array.isArray(emails)?emails[0]:'')||'',phone:raw.phone||(info.phones||raw.phones||[])[0]||'',skills:Array.isArray(raw.skills)?raw.skills.join('; '):(raw.skills||'')};
 }
 function parseContactoutPayload(text){
   const cleaned=text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
-  const data=JSON.parse(cleaned),source=Array.isArray(data)?data:(data.profiles||data.data?.profiles||data.data?.result||data.results||[]);
-  return Array.isArray(source)?source.map(x=>candidateFrom(x)):Object.entries(source).map(([key,value])=>candidateFrom(value||{},key));
+  const data=JSON.parse(cleaned),source=Array.isArray(data)?data:(data.profiles||data.data?.profiles||data.data?.result||data.results||((data.full_name||data.name||data.li_vanity)?[data]:[]));
+  if(Array.isArray(source))return source.map(x=>candidateFrom(x));
+  if(source&&typeof source==='object'&&(source.full_name||source.name||source.li_vanity))return [candidateFrom(source)];
+  return source&&typeof source==='object'?Object.entries(source).map(([key,value])=>candidateFrom(value||{},key)):[];
 }
 function renderContactoutResults(){
   if(!contactoutCandidates.length){$('#contactoutResults').innerHTML='';return}
