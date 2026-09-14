@@ -61,6 +61,7 @@
               <label class="contactout-check"><input id="coReveal" type="checkbox"> 同时查找邮箱/电话（会消耗联系方式额度）</label>
             </div>
             <div class="actions"><button id="buildContactoutPrompt" type="button">生成并复制搜索指令</button><button id="openContactoutChat" class="secondary" type="button">打开 ChatGPT 执行</button></div>
+            <p id="contactoutPromptStatus" class="muted" role="status">填写关键词后，点击按钮生成指令。</p>
             <textarea id="contactoutPrompt" class="contactout-output" readonly placeholder="生成的 ChatGPT 搜索指令会显示在这里"></textarea>
             <h2>导入 ChatGPT 返回结果</h2>
             <p class="muted">要求 ChatGPT 返回 JSON。支持数组，或 ContactOut API 的 <code>profiles</code> 对象。</p>
