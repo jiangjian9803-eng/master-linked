@@ -56,7 +56,6 @@ function buildContactoutPrompt(){
   if(skills.length)criteria.push(`技能：${skills.join('、')}`);
   return `请实际调用 ContactOut MCP 的 people-search 工具批量搜索候选人。\n筛选条件：\n- ${criteria.join('\n- ')}\n- 最多返回：${limit} 人\n- reveal_info：${reveal?'true（返回可用的邮箱和电话；允许消耗联系方式额度）':'false（不要揭示邮箱或电话）'}\n\n必须原样使用 ContactOut 工具的真实返回值，不要猜测、虚构或补全任何候选人和链接。如果工具不可用或没有结果，请直接说明。最后只输出一个 JSON 数组，不要 Markdown 代码块，不要解释。每位候选人使用这些字段：full_name, title, company, location, li_vanity, work_email, personal_email, phone, skills。没有值时使用空字符串；skills 使用字符串数组。`;
 }
-$('#buildContactoutPrompt')?.addEventListener('click',async e=>{const prompt=buildContactoutPrompt();if(!prompt)return;const button=e.currentTarget,output=$('#contactoutPrompt');output.value=prompt;try{await navigator.clipboard.writeText(prompt);$('#contactoutPromptStatus').textContent='✓ 已生成并复制。请到 ChatGPT 中选择 @ContactOut 后粘贴发送。';button.textContent='✓ 已生成并复制'}catch{$('#contactoutPromptStatus').textContent='✓ 指令已生成，请在下方手动复制。';button.textContent='✓ 已生成'}output.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>button.textContent='生成并复制搜索指令',2500)});
 $('#openContactoutChat')?.addEventListener('click',()=>{const prompt=buildContactoutPrompt();if(prompt){$('#contactoutPrompt').value=prompt;navigator.clipboard?.writeText(prompt)}window.open('https://chatgpt.com/','_blank','noopener')});
 function candidateFrom(raw,key=''){
   const info=raw.contact_info||{},emails=info.emails||raw.emails||[],personal=info.personal_emails||raw.personal_emails||[],work=info.work_emails||raw.work_emails||[];
