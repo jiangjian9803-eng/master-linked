@@ -77,9 +77,11 @@
           </details>
           <section class="contactout-workbench co-email-batch">
             <h2>批量补全私人邮箱</h2>
-            <p class="muted">适合已有一批 LinkedIn 账号的情况。只保留 ContactOut 实际返回的私人邮箱；没有结果统一写“未公开”，不会用工作邮箱代替。</p>
+            <p class="co-web-only"><strong>采用网页端 CSV 方式</strong><span>Master Linked 不直接调用 ContactOut API，也不需要在这里填写 Production Key。</span></p>
+            <p class="muted">适合已有一批 LinkedIn 账号的情况。Master Linked 负责整理和合并文件；真实邮箱由 ContactOut 网页端补全。只保留 ContactOut 实际返回的私人邮箱，没有结果统一写“未公开”，不会用工作邮箱代替。</p>
             <div class="co-batch-step"><strong>1. 导入 LinkedIn 名单</strong><p>上传 CSV，或把 LinkedIn 链接每行粘贴一个。系统会自动去重。</p><input id="coLinkedinFile" type="file" accept=".csv,.txt,text/csv,text/plain"><textarea id="coLinkedinPaste" class="contactout-output result-input" placeholder="https://www.linkedin.com/in/person-1&#10;https://www.linkedin.com/in/person-2"></textarea><button id="coBuildUploadCsv" type="button">生成 ContactOut 上传 CSV</button><p id="coBatchStatus" class="muted" role="status">尚未导入 LinkedIn 名单。</p></div>
-            <div class="co-batch-step"><strong>2. 导回 ContactOut 结果</strong><p>在 ContactOut 完成批量补全并下载 CSV 后，把结果文件上传到这里。</p><input id="coReturnedFile" type="file" accept=".csv,text/csv"><button id="coMergeReturned" class="secondary" type="button">解析并合并私人邮箱</button></div>
+            <div class="co-batch-step"><strong>2. 在 ContactOut 网页端补全</strong><p>把上一步生成的 CSV 上传到 ContactOut 网页端，完成补全后下载结果 CSV。</p></div>
+            <div class="co-batch-step"><strong>3. 导回 ContactOut 结果</strong><p>把 ContactOut 网页端下载的结果 CSV 上传到这里。</p><input id="coReturnedFile" type="file" accept=".csv,text/csv"><button id="coMergeReturned" class="secondary" type="button">解析并合并私人邮箱</button></div>
             <div id="coEmailResults" class="contactout-results"></div>
             <button id="coExportPersonalEmails" type="button" disabled>导出最终 CSV</button>
           </section>
