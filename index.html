@@ -22,7 +22,7 @@
       <button class="nav" data-view="linked-mcp">Linked MCP</button>
       <button class="nav" data-view="email-outreach">Word 群发邮件</button>
       <button class="nav" data-view="meeting-records">会议记录</button>
-      <button class="nav" data-view="contactout-chatgpt">Contact out with ChatGPT</button>
+      <button class="nav" data-view="contactout-chatgpt">ContactOut with ChatGPT</button>
       <button class="nav" data-view="settings">设置</button>
       <div class="side-note">数据只保存在本机浏览器。发送动作由你本人确认完成。</div>
     </aside>
@@ -38,23 +38,17 @@
       <div id="email-outreachView" class="view hidden"><div class="page-head"><div><h1>Word 群发邮件</h1><p>用 Excel 联系人表和 Word 话术，快速完成邮件群发</p></div></div><div class="panel word-merge"><h2>Word 群发</h2><p>上传联系人表格和联系话术，检查后直接使用本机 Word 中已配置的 Outlook 邮箱发送。</p><div class="field"><label>联系人 Excel 表格<input id="wordExcelInput" type="file" accept=".xlsx,.xls,.csv" /></label></div><div class="field"><label>联系话术 Word 模板<input id="wordTemplateInput" type="file" accept=".docx,.doc" /></label></div><p id="wordMergeStatus" class="muted">请选择上面两个文件。</p><button id="wordMergeBtn" class="button" disabled>检查文件并开始 Word 群发</button><p class="muted">不需要重新打开或登录邮箱；文件只在本机处理，发送由你确认。</p></div></div>
       <div id="meeting-recordsView" class="view hidden"><div class="page-head"><div><h1>会议记录</h1><p>录音、转写并按模板整理会议纪要</p></div></div><div class="panel meeting-panel"><h2>第一步：录音或粘贴文字</h2><div class="actions"><button id="recordStartBtn" class="button">开始录音</button><button id="recordStopBtn" class="secondary" disabled>停止录音</button></div><p id="recordStatus" class="muted">录音仅保存在本机；也可以直接粘贴已有转写。</p><a id="downloadRecording" class="button secondary hidden" download="meeting-recording.webm">下载录音</a><textarea id="meetingTranscript" class="template" placeholder="在这里粘贴会议转写内容，或使用录音后补充文字"></textarea><h2>第二步：会议纪要模板</h2><textarea id="meetingTemplate" class="template">会议主题：\n会议日期：\n\n核心结论：\n\n重点事项与负责人：\n- \n\n时间节点：\n- \n\n后续跟进：\n- </textarea><div class="actions"><button id="summarizeMeetingBtn" class="button">按模板生成会议纪要</button><button id="saveMeetingBtn" class="secondary">保存本条纪要</button></div><h2>会议纪要</h2><textarea id="meetingSummary" class="template" placeholder="生成后的会议纪要会显示在这里"></textarea><p class="muted">录音在本机完成；自动转文字取决于浏览器支持，不影响录音和保存。</p></div></div>
       <div id="contactout-chatgptView" class="view hidden">
-        <div class="page-head"><div><h1>Contact out with ChatGPT</h1><p>把 ContactOut 官方 MCP 连接到 ChatGPT</p></div></div>
+        <div class="page-head"><div><h1>ContactOut with ChatGPT</h1><p>把 ContactOut 官方 MCP 连接到 ChatGPT</p></div></div>
         <div class="panel contactout-panel">
           <div class="contactout-badge"><span>CO</span><div><strong>ContactOut MCP</strong><small>官方远程 MCP · 无需在本站保存 API key</small></div></div>
-          <h2>三分钟安装（已验证）</h2>
-          <ol class="setup-steps">
-            <li>使用安装了 Codex CLI 的 ChatGPT 桌面版；在 <strong>Settings → Security and login</strong> 中打开 <strong>Developer mode</strong>。</li>
-            <li>打开终端，依次运行下面两条命令。它们会添加公开插件源并安装 ContactOut 插件。</li>
-            <li>完全退出并重新打开 ChatGPT，然后前往 <strong>Settings → Plugins → Installed</strong>，确认出现 <strong>ContactOut with ChatGPT</strong>。</li>
-            <li>新建聊天并首次调用 ContactOut；出现授权页面时，再输入你自己的 ContactOut API token。</li>
-          </ol>
-          <div class="install-command"><code>codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main">复制</button></div>
-          <div class="install-command"><code>codex plugin add contactout-chatgpt@contactout-tools</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin add contactout-chatgpt@contactout-tools">复制</button></div>
-          <p id="contactoutInstallStatus" class="muted" role="status">插件代码公开可审查，安装过程中不会把 API key 写入 GitHub。</p>
-          <div class="actions contactout-actions"><a class="button secondary" href="https://github.com/jiangjian9803-eng/contactout-chatgpt-plugin" target="_blank" rel="noopener">查看插件源码</a></div>
-          <details class="platform-guide" open><summary>Windows 安装方法</summary><ol><li>安装并打开 Windows 版 ChatGPT；没有安装时，在 PowerShell 运行下方的 <code>winget</code> 命令。</li><li>在 ChatGPT 中切换到 Codex，按 <strong>Ctrl + `</strong> 打开内置 PowerShell 终端。</li><li>先运行 <code>codex --version</code>。能显示版本后，再运行上面的两条插件安装命令。</li><li>关闭所有 ChatGPT 窗口并重新启动，在 <strong>Settings → Plugins → Installed</strong> 中检查插件。</li></ol><div class="install-command"><code>winget install --id 9PLM9XGG6VKS -s msstore</code><button class="copy-install-command secondary" type="button" data-copy-text="winget install --id 9PLM9XGG6VKS -s msstore">复制</button></div><p class="muted">推荐选择 Windows native + PowerShell。若使用 WSL，配置保存在 Linux 的 <code>~/.codex</code>，默认不会与 Windows 应用的 <code>%USERPROFILE%\.codex</code> 自动共享。</p></details>
-          <details class="platform-guide"><summary>macOS 安装方法</summary><p>在 ChatGPT/Codex 的内置终端或 macOS Terminal 运行上面的两条插件命令，然后完全退出并重新打开 ChatGPT。</p></details>
-          <details class="alternate-install"><summary>如果公开插件目录以后已经收录 ContactOut</summary><p>进入 <strong>Settings → Plugins → Browse plugins</strong> 搜索 ContactOut，直接安装即可，不需要运行终端命令。</p></details>
+          <h2>首次连接：照着做即可</h2>
+          <div class="contactout-guide-cards">
+            <section class="contactout-guide-step"><div class="step-copy"><span class="step-number">1</span><div><h3>打开开发者模式</h3><p><strong>Settings → Security and login → Developer mode</strong>，把开关打开。</p></div></div><img src="assets/guides/chatgpt-developer-mode-on.png" alt="ChatGPT Developer mode 已打开"></section>
+            <section class="contactout-guide-step"><div class="step-copy"><span class="step-number">2</span><div><h3>创建 ContactOut</h3><p>进入 <strong>Settings → Plugins → Browse plugins</strong>，点击右上角 <strong>+</strong>，按下图填写并点击 <strong>Create</strong>。</p></div></div><img src="assets/guides/contactout-new-plugin-filled.png" alt="ChatGPT 新建 ContactOut 插件的正确填写示例"><div class="contactout-field-guide" aria-label="ContactOut 插件填写内容"><div><strong>Name</strong><code>ContactOut</code></div><div><strong>Description</strong><code>Search and enrich recruiting candidates with ContactOut</code></div><div><strong>Connection</strong><code>Server URL</code></div><div><strong>Server URL</strong><code>https://contactout.com/mcp</code></div><div><strong>Authentication</strong><code>OAuth</code></div></div><p class="step-tip">勾选风险提示；不要修改 Advanced OAuth settings。</p></section>
+            <section class="contactout-guide-step"><div class="step-copy"><span class="step-number">3</span><div><h3>登录并完成连接</h3><p>粘贴你自己的 ContactOut <strong>API Key</strong>（这里也叫 API Token），点击 <strong>Login</strong>。</p></div></div><img src="assets/guides/contactout-api-token-login.png" alt="ContactOut API User Login 授权页面"><p class="step-tip">看到 Connection: ContactOut 和 OAuth，即连接成功。若 Actions 暂时为空，点击 Refresh，再新建聊天。</p><img src="assets/guides/contactout-connected.png" alt="ChatGPT 中 ContactOut 已连接成功"></section>
+          </div>
+          <p class="contactout-note"><strong>安全提醒：</strong>API Key 只填在 ContactOut 登录页面，不要填进 Server URL，也不要发给别人。</p>
+          <details class="alternate-install"><summary>备用：使用 Codex CLI 安装公开插件</summary><div class="install-command"><code>codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin marketplace add jiangjian9803-eng/contactout-chatgpt-plugin --ref main">复制</button></div><div class="install-command"><code>codex plugin add contactout-chatgpt@contactout-tools</code><button class="copy-install-command secondary" type="button" data-copy-text="codex plugin add contactout-chatgpt@contactout-tools">复制</button></div><p id="contactoutInstallStatus" class="muted" role="status">仅在界面无法直接创建时使用。Windows PowerShell 和 macOS Terminal 命令相同。</p><div class="actions contactout-actions"><a class="button secondary" href="https://github.com/jiangjian9803-eng/contactout-chatgpt-plugin" target="_blank" rel="noopener">查看插件源码</a></div></details>
           <label class="mcp-url-label" for="contactoutMcpUrl">MCP Server URL</label>
           <div class="mcp-url-row"><input id="contactoutMcpUrl" value="https://contactout.com/mcp" readonly><button id="copyContactoutMcp" type="button">复制地址</button></div>
           <p id="contactoutCopyStatus" class="muted" role="status">你的 API key 不会写入网页、localStorage 或 GitHub 仓库。</p>
@@ -85,7 +79,7 @@
             <button class="prompt-copy secondary" type="button" data-prompt="使用 ContactOut，查找多伦多地区的高级机器学习工程师，并返回姓名、公司、职位和 LinkedIn 链接。先不要消耗联系方式额度。">搜索候选人</button>
             <button class="prompt-copy secondary" type="button" data-prompt="使用 ContactOut 查询我的 API 使用情况和剩余额度。">查询剩余额度</button>
           </div>
-          <p class="contactout-note">Developer mode 菜单项只会打开安全设置中的开关，不是 MCP 地址输入页面。ContactOut 当前不在公开插件目录时，请使用上面的 marketplace 安装方式。插件装好后要新建聊天才会加载 MCP 工具。</p>
+          <p class="contactout-note">如果看不到右上角的 +，先确认 Developer mode 已开启，再返回 Browse plugins。创建完成后请新建聊天，让 ChatGPT 加载 ContactOut 工具。</p>
         </div>
       </div>
       <div id="templateView" class="view hidden"><div class="page-head"><div><h1>消息模板</h1><p>使用 <code>{GivenName}</code> 自动替换称呼</p></div><div class="actions"><button id="copyTemplateBtn" class="secondary" aria-label="复制模板">复制模板</button><button id="saveTemplate">保存模板</button></div></div><textarea id="templateText" class="template"></textarea><div class="preview"><h3>预览</h3><div id="templatePreview"></div></div></div>
