@@ -70,6 +70,14 @@
             <p id="contactoutSearchStatus" class="muted" role="status">尚未生成搜索任务。</p>
             <div id="contactoutResults" class="contactout-results"></div>
           </section>
+          <section class="contactout-workbench co-email-batch">
+            <h2>批量补全私人邮箱</h2>
+            <p class="muted">适合已有一批 LinkedIn 账号的情况。只保留 ContactOut 实际返回的私人邮箱；没有结果统一写“未公开”，不会用工作邮箱代替。</p>
+            <div class="co-batch-step"><strong>1. 导入 LinkedIn 名单</strong><p>上传 CSV，或把 LinkedIn 链接每行粘贴一个。系统会自动去重。</p><input id="coLinkedinFile" type="file" accept=".csv,.txt,text/csv,text/plain"><textarea id="coLinkedinPaste" class="contactout-output result-input" placeholder="https://www.linkedin.com/in/person-1&#10;https://www.linkedin.com/in/person-2"></textarea><button id="coBuildUploadCsv" type="button">生成 ContactOut 上传 CSV</button><p id="coBatchStatus" class="muted" role="status">尚未导入 LinkedIn 名单。</p></div>
+            <div class="co-batch-step"><strong>2. 导回 ContactOut 结果</strong><p>在 ContactOut 完成批量补全并下载 CSV 后，把结果文件上传到这里。</p><input id="coReturnedFile" type="file" accept=".csv,text/csv"><button id="coMergeReturned" class="secondary" type="button">解析并合并私人邮箱</button></div>
+            <div id="coEmailResults" class="contactout-results"></div>
+            <button id="coExportPersonalEmails" type="button" disabled>导出最终 CSV</button>
+          </section>
           <h2>连接后可以这样问</h2>
           <div class="prompt-list">
             <button class="prompt-copy secondary" type="button" data-prompt="使用 ContactOut，根据这个 LinkedIn 链接查找工作邮箱：https://www.linkedin.com/in/example">查 LinkedIn 联系方式</button>
@@ -85,6 +93,7 @@
   </main>
   <dialog id="contactDialog"><form method="dialog" id="contactForm"><h2 id="dialogTitle">新增联系人</h2><input id="nameInput" required placeholder="姓名" /><input id="linkedinInput" placeholder="LinkedIn 链接" /><input id="companyInput" placeholder="公司 / 学校" /><input id="positionInput" placeholder="职位" /><input id="workYearsInput" placeholder="工作年限（如 8 年）" /><input id="workStatusInput" placeholder="工作状态（在职 / 求职中 / 学术界）" /><input id="focusInput" placeholder="技术方向" /><menu><button value="cancel" class="secondary">取消</button><button id="saveContact" value="default">保存</button></menu></form></dialog>
   <script src="contactout-prompt.js"></script>
+  <script src="contactout-batch.js"></script>
   <script src="app.js"></script>
   <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
