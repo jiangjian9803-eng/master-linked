@@ -55,6 +55,39 @@ document.querySelectorAll('.prompt-copy').forEach(button=>button.addEventListene
   }
 }));
 
+let contactoutCandidates=[];
+const splitTerms=value=>String(value||'').split(/[,，\n]/).map(x=>x.trim()).filter(Boolean);
+function buildContactoutPrompt(){
+  const titles=splitTerms($('#coJobTitles').value),locations=splitTerms($('#coLocations').value),companies=splitTerms($('#coCompanies').value),skills=splitTerms($('#coSkills').value),limit=Number($('#coLimit').value)||25,reveal=$('#coReveal').checked;
+  if(!titles.length&&!skills.length){$('#contactoutSearchStatus').textContent='请至少填写职位关键词或技能关键词。';return ''}
+  const criteria=[];
+  if(titles.length)criteria.push(`职位关键词：${titles.join('、')}`);
+  if(locations.length)criteria.push(`地区：${locations.join('、')}`);
+  if(companies.length)criteria.push(`当前公司：${companies.join('、')}`);
+  if(skills.length)criteria.push(`技能：${skills.join('、')}`);
+  return `请使用 ContactOut MCP 的 People Search 工具批量搜索候选人。\n筛选条件：\n- ${criteria.join('\n- ')}\n- 最多返回：${limit} 人\n- reveal_info：${reveal?'true（返回可用的邮箱和电话；允许消耗联系方式额度）':'false（不要揭示邮箱或电话）'}\n\n不要虚构信息，不要补全 ContactOut 没有返回的字段。最后只输出一个 JSON 数组，不要 Markdown 代码块，不要解释。每位候选人使用这些字段：name, title, company, location, linkedin, work_email, personal_email, phone, skills。没有值时使用空字符串；skills 使用字符串数组。`;
+}
+$('#buildContactoutPrompt')?.addEventListener('click',async()=>{const prompt=buildContactoutPrompt();if(!prompt)return;$('#contactoutPrompt').value=prompt;try{await navigator.clipboard.writeText(prompt);$('#contactoutSearchStatus').textContent='✓ 搜索指令已复制，请在已连接 ContactOut 的 ChatGPT 中粘贴并发送。'}catch{$('#contactoutSearchStatus').textContent='搜索指令已生成，请手动复制。'}});
+$('#openContactoutChat')?.addEventListener('click',()=>{const prompt=buildContactoutPrompt();if(prompt){$('#contactoutPrompt').value=prompt;navigator.clipboard?.writeText(prompt)}window.open('https://chatgpt.com/','_blank','noopener')});
+function candidateFrom(raw,key=''){
+  const info=raw.contact_info||{},emails=info.emails||raw.emails||[],personal=info.personal_emails||raw.personal_emails||[],work=info.work_emails||raw.work_emails||[];
+  const firstExperience=Array.isArray(raw.experience)?raw.experience[0]||{}:{};
+  return {name:raw.name||raw.full_name||[raw.first_name,raw.last_name].filter(Boolean).join(' ')||'',title:raw.title||raw.job_title||firstExperience.title||'',company:raw.company?.name||raw.company_name||firstExperience.company||raw.company||'',location:typeof raw.location==='string'?raw.location:(raw.location?.name||''),linkedin:raw.linkedin||raw.linkedin_url||raw.li_vanity||raw.url||key||'',work_email:raw.work_email||work[0]||'',personal_email:raw.personal_email||personal[0]||'',email:raw.email||(Array.isArray(emails)?emails[0]:'')||'',phone:raw.phone||(info.phones||raw.phones||[])[0]||'',skills:Array.isArray(raw.skills)?raw.skills.join('; '):(raw.skills||'')};
+}
+function parseContactoutPayload(text){
+  const cleaned=text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+  const data=JSON.parse(cleaned),source=Array.isArray(data)?data:(data.profiles||data.data?.profiles||data.data?.result||data.results||[]);
+  return Array.isArray(source)?source.map(x=>candidateFrom(x)):Object.entries(source).map(([key,value])=>candidateFrom(value||{},key));
+}
+function renderContactoutResults(){
+  if(!contactoutCandidates.length){$('#contactoutResults').innerHTML='';return}
+  $('#contactoutResults').innerHTML=`<div class="co-table-wrap"><table class="co-table"><thead><tr><th>姓名</th><th>职位</th><th>公司</th><th>地区</th><th>联系方式</th><th>LinkedIn</th></tr></thead><tbody>${contactoutCandidates.map(c=>`<tr><td>${esc(c.name||'—')}</td><td>${esc(c.title||'—')}</td><td>${esc(c.company||'—')}</td><td>${esc(c.location||'—')}</td><td>${esc(c.work_email||c.personal_email||c.email||c.phone||'未揭示')}</td><td>${c.linkedin?`<a href="${esc(c.linkedin)}" target="_blank" rel="noopener">打开</a>`:'—'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+$('#parseContactoutResults')?.addEventListener('click',()=>{try{contactoutCandidates=parseContactoutPayload($('#contactoutResultInput').value);if(!contactoutCandidates.length)throw Error('没有候选人');renderContactoutResults();$('#addContactoutResults').disabled=false;$('#exportContactoutCsv').disabled=false;$('#contactoutSearchStatus').textContent=`✓ 已解析 ${contactoutCandidates.length} 位候选人。`}catch(error){contactoutCandidates=[];renderContactoutResults();$('#addContactoutResults').disabled=true;$('#exportContactoutCsv').disabled=true;$('#contactoutSearchStatus').textContent=`解析失败：${error.message||'请检查 JSON 格式'}`}});
+$('#addContactoutResults')?.addEventListener('click',()=>{let added=0;contactoutCandidates.forEach(x=>{if(!x.name||state.contacts.some(c=>(x.linkedin&&c.linkedin===x.linkedin)||(!x.linkedin&&c.name===x.name)))return;state.contacts.push({id:crypto.randomUUID(),name:x.name,linkedin:x.linkedin,company:x.company,position:x.title,focus:x.skills,notes:[x.location,x.work_email||x.personal_email||x.email,x.phone].filter(Boolean).join(' · '),status:'pending'});added++});save();render();$('#contactoutSearchStatus').textContent=`✓ 已加入 ${added} 位新联系人，重复项已跳过。`});
+function csvCell(value){return `"${String(value??'').replaceAll('"','""')}"`}
+$('#exportContactoutCsv')?.addEventListener('click',()=>{const fields=['name','title','company','location','linkedin','work_email','personal_email','email','phone','skills'];const csv='\ufeff'+[fields.join(','),...contactoutCandidates.map(c=>fields.map(f=>csvCell(c[f])).join(','))].join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`contactout-candidates-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);$('#contactoutSearchStatus').textContent=`✓ 已导出 ${contactoutCandidates.length} 位候选人的 CSV。`});
+
 // 兼容 LinkedIn 原生 Connections.csv：First Name、Last Name、URL、Company、Position。
 $('#importInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;const text=await file.text();const lines=text.split(/\r?\n/).filter(Boolean);const parse=l=>l.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(x=>x.replace(/^\"|\"$/g,'').trim());const head=parse(lines.shift()).map(x=>x.toLowerCase());const idx=ps=>head.findIndex(x=>ps.some(p=>p.test(x)));let added=0;for(const line of lines){const r=parse(line),first=r[idx([/first name/,/^first$/,/名/])]||'',last=r[idx([/last name/,/^last$/,/姓/])]||'',name=first&&last?`${first} ${last}`:(r[idx([/^name$/, /姓名/])]||first||r[0]),linkedin=r[idx([/linkedin/,/^url$/, /profile url/,/个人主页/])]||'',company=r[idx([/company/,/公司/,/学校/])]||'',position=r[idx([/position/,/title/,/职位/])]||'';if(name&&!state.contacts.some(c=>c.name===name&&c.linkedin===linkedin)){state.contacts.push({id:crypto.randomUUID(),name,linkedin,company,position,status:'pending'});added++}}save();render();e.target.value='';alert(`导入完成：新增 ${added} 位联系人。`)};
 

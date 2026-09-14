@@ -29,3 +29,5 @@
 ## ContactOut with ChatGPT
 
 侧栏“会议记录”下方提供 ContactOut 官方 MCP 的 ChatGPT 接入向导。使用的远程 MCP 地址为 `https://contactout.com/mcp`。API token 只应在 ContactOut 的授权流程中输入，不会保存在本站或仓库中。ChatGPT 自定义 MCP App 的可用性取决于套餐和工作区权限。
+
+该模块还提供批量搜索工作台：根据职位、地区、公司、技能和人数生成结构化 ChatGPT 搜索指令，解析 ChatGPT/ContactOut 返回的 JSON，预览候选人、去重加入本地联系人并导出 UTF-8 CSV。启用 `reveal_info` 前会明确提示联系方式额度消耗。
