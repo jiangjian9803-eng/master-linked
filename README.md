@@ -35,3 +35,5 @@
 新版 ChatGPT/Codex 客户端优先从 `Settings → Plugins` 查找并连接服务。自定义 MCP/App 管理入口仅在符合条件且获得相应权限的工作区中显示；若插件目录没有 ContactOut，需要工作区管理员添加远程 MCP，或另行安装本地自定义插件。
 
 工作台内置经过验证的三分钟安装流程，使用公开 marketplace `jiangjian9803-eng/contactout-chatgpt-plugin`。它解释 Developer mode 只是安全开关，提供可复制的 marketplace/plugin 安装命令、源码链接、重启和首次授权步骤。
+
+Windows 用户可直接使用 ChatGPT 桌面应用的 Windows native agent 和内置 PowerShell 终端执行相同命令；工作台提供 Windows 应用的 `winget` 安装命令、`Ctrl + \`` 终端快捷键及 WSL 配置隔离提醒。
