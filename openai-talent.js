@@ -2,6 +2,7 @@
   const root=document.querySelector('#openai-talentView');
   if(!root)return;
   const KEY='master-linked-openai-talent-v1';
+  const BACKUP_KEY='master-linked-openai-talent-backups-v1';
   const teams=[
     {id:'frontier',name:'前沿研究 / Frontier',lead:'Jakub Pachocki & Mark Chen',size:'约 50–80',focus:'通用研发组合、前沿探索与新项目'},
     {id:'foundation',name:'Foundation',lead:'Mark Chen',size:'约 80–120',focus:'基础模型、多模态底座、预训练数据、Scaling law、Retrieval'},
@@ -28,7 +29,7 @@
   const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
   const statusText={watch:'长期跟踪',target:'重点目标',connect_sent:'已申请 Connect',incoming_invite:'收到 Connect',connected:'已连接',contacted:'已联系',engaged:'有回复',screening:'沟通中',interview:'面试中',offer:'Offer',closed:'暂不推进'};
   root.innerHTML=`<div class="oai-shell">
-    <section class="oai-hero"><div><h1>OpenAI 人才情报与招聘跟进</h1><p>面向华为加拿大研究所北美高端社招：按 OpenAI 团队、技术方向、关系状态和招聘阶段持续维护人才数据。</p></div><div class="oai-actions"><label class="oai-button secondary">批量导入 LinkedIn CSV<input id="oaiImport" type="file" accept=".csv,text/csv" multiple hidden></label><button id="oaiAdd" class="oai-button">新增人才</button><button id="oaiExport" class="oai-button secondary">导出 CSV</button></div></section>
+    <section class="oai-hero"><div><h1>OpenAI 人才情报与招聘跟进</h1><p>面向华为加拿大研究所北美高端社招：按 OpenAI 团队、技术方向、关系状态和招聘阶段持续维护人才数据。</p></div><div class="oai-actions"><label class="oai-button secondary">批量导入 LinkedIn CSV<input id="oaiImport" type="file" accept=".csv,text/csv" multiple hidden></label><button id="oaiAdd" class="oai-button">新增人才</button><button id="oaiExport" class="oai-button secondary">导出 CSV</button><button id="oaiBackup" class="oai-button secondary">完整备份</button><button id="oaiUndoImport" class="oai-button secondary">撤销最近导入</button></div></section>
     <div id="oaiImportStatus" class="oai-import-status"><strong>支持一次选择多个文件：</strong>Connections 和 Invitations 会创建真实联系人并按 LinkedIn URL / 姓名去重；Messages 会补充沟通记录。账号本人的 Education、Positions、Email Addresses 以及 Company Follows 不会被误建为候选人。</div>
     <div class="oai-callout"><strong>数据原则：</strong>只记录与招聘相关的公开职业信息和你本人产生的沟通记录；不要记录族裔推断、健康、宗教、政治观点等无关敏感信息。团队人数和负责人来自用户提供的架构图，属于研究假设，需定期核验。</div>
     <section class="oai-kpis"><div class="oai-kpi"><span>人才总数</span><strong id="oaiTotal">0</strong></div><div class="oai-kpi"><span>重点目标</span><strong id="oaiTargets">0</strong></div><div class="oai-kpi"><span>已申请 Connect</span><strong id="oaiRequested">0</strong></div><div class="oai-kpi"><span>已连接 / 有回复</span><strong id="oaiEngaged">0</strong></div><div class="oai-kpi"><span>19+ 潜力</span><strong id="oaiLevel19">0</strong></div></section>
@@ -73,6 +74,7 @@
   }
   const norm=v=>clean(v).toLowerCase().replace(/[\s_-]+/g,'');
   const normUrl=canonicalLinkedIn;
+  const snapshot=()=>{const backups=JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');backups.unshift({at:new Date().toISOString(),state:JSON.parse(JSON.stringify(state))});localStorage.setItem(BACKUP_KEY,JSON.stringify(backups.slice(0,5)));};
   const findPerson=(name,linkedin)=>state.people.find(p=>(linkedin&&normUrl(p.linkedin)===normUrl(linkedin))||(!linkedin&&name&&norm(p.name)===norm(name)));
   const addInteraction=(person,item)=>{person.interactions=Array.isArray(person.interactions)?person.interactions:[];const key=[item.type,item.date,item.direction,item.message].map(norm).join('|');if(!person.interactions.some(x=>[x.type,x.date,x.direction,x.message].map(norm).join('|')===key))person.interactions.push(item);};
   const rank={watch:0,target:1,connect_sent:2,incoming_invite:2,connected:3,contacted:4,engaged:5,screening:6,interview:7,offer:8,closed:9};
@@ -112,13 +114,15 @@
       if(!person&&!allowCreate){skipped++;continue;}
       if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,company:'',title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;
       ['name','linkedin','company','title','location','focus','notes'].forEach(k=>{if(data[k]&&!person[k])person[k]=data[k];});
-      if(verifiedOpenAI){person.company='OpenAI';if(data.title)person.title=data.title;if(data.focus)person.focus=data.focus;if(data.team&&data.team!=='unknown')person.team=data.team;if(data.notes)person.notes=data.notes;}
+      if(verifiedOpenAI){person.company='OpenAI';if(!person.title&&data.title)person.title=data.title;if(!person.focus&&data.focus)person.focus=data.focus;if((!person.team||person.team==='unknown')&&data.team&&data.team!=='unknown')person.team=data.team;if(data.notes&&!clean(person.notes).includes(data.notes))person.notes=[person.notes,data.notes].filter(Boolean).join('\n');}
       if(data.status&&(rank[data.status]??0)>(rank[person.status]??0))person.status=data.status;
       if(data.lastContact)person.lastContact=data.lastContact;person.source=[person.source,file.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('; ');person.updatedAt=new Date().toISOString();if(interaction)addInteraction(person,interaction);
     }
     return {file:file.name,type,rows:rows.length,added,updated,skipped,openaiMatched};
   }
-  $('#oaiImport').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const reports=[];for(const file of files){try{reports.push(importFile(file,parseCsv(await file.text())));}catch(err){reports.push({file:file.name,type:'读取失败',rows:0,added:0,updated:0,skipped:0,openaiMatched:0});}}save();render();e.target.value='';const totals=reports.reduce((a,r)=>({added:a.added+r.added,updated:a.updated+r.updated,skipped:a.skipped+r.skipped,openaiMatched:a.openaiMatched+(r.openaiMatched||0)}),{added:0,updated:0,skipped:0,openaiMatched:0});$('#oaiImportStatus').innerHTML=`<strong>导入完成：</strong>OpenAI 命中 ${totals.openaiMatched}，新增 ${totals.added}，更新 ${totals.updated}，跳过无关/未匹配 ${totals.skipped}。<br>${reports.map(r=>`${esc(r.file)}：${r.type}，${r.rows} 行，OpenAI ${r.openaiMatched||0}，新增 ${r.added}，更新 ${r.updated}，跳过 ${r.skipped}`).join('<br>')}`;};
+  $('#oaiImport').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;snapshot();const reports=[];for(const file of files){try{reports.push(importFile(file,parseCsv(await file.text())));}catch(err){reports.push({file:file.name,type:'读取失败',rows:0,added:0,updated:0,skipped:0,openaiMatched:0});}}save();render();e.target.value='';const totals=reports.reduce((a,r)=>({added:a.added+r.added,updated:a.updated+r.updated,skipped:a.skipped+r.skipped,openaiMatched:a.openaiMatched+(r.openaiMatched||0)}),{added:0,updated:0,skipped:0,openaiMatched:0});$('#oaiImportStatus').innerHTML=`<strong>导入完成：</strong>OpenAI 命中 ${totals.openaiMatched}，新增 ${totals.added}，更新 ${totals.updated}，跳过无关/未匹配 ${totals.skipped}。已自动保存导入前快照。<br>${reports.map(r=>`${esc(r.file)}：${r.type}，${r.rows} 行，OpenAI ${r.openaiMatched||0}，新增 ${r.added}，更新 ${r.updated}，跳过 ${r.skipped}`).join('<br>')}`;};
+  $('#oaiBackup').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),state},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`openai-talent-full-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);};
+  $('#oaiUndoImport').onclick=()=>{const backups=JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');if(!backups.length)return alert('没有可撤销的导入快照。');const latest=backups.shift();if(!confirm(`恢复到 ${new Date(latest.at).toLocaleString()} 导入前的状态？`))return;state=latest.state;localStorage.setItem(BACKUP_KEY,JSON.stringify(backups));save();currentPage=1;render();$('#oaiImportStatus').innerHTML='<strong>已撤销最近一次导入。</strong> 人才漏斗已恢复到导入前状态。';};
   $('#oaiExport').onclick=()=>{const fields=['name','linkedin','company','title','location','team','focus','priority','level19','status','lastContact','nextAction','source','notes','updatedAt'],cell=v=>`"${clean(v).replaceAll('"','""')}"`;const csv=['\ufeff'+fields.join(','),...state.people.map(p=>fields.map(f=>cell(p[f])).join(','))].join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`openai-talent-pipeline-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);};
   render();
 })();
