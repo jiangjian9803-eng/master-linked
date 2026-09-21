@@ -98,11 +98,14 @@
         name=[get(row,'First Name'),get(row,'Last Name')].filter(Boolean).join(' ')||get(row,'Name','Full Name','姓名');linkedin=get(row,'URL','LinkedIn URL','Profile URL','LinkedIn','领英链接');
         data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','Research Function','方向'),company:get(row,'Company','公司'),team:get(row,'Team','OpenAI Team','团队')||'unknown',status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact','Invitation Date'),notes:get(row,'Notes','备注')};
         const teamConfidence=get(row,'Team Confidence'),teamEvidence=get(row,'Team Evidence');if(teamConfidence||teamEvidence)data.notes=[data.notes,`团队判断：${teamConfidence||'待核验'}；${teamEvidence||''}`].filter(Boolean).join('\n');
-        if(verifiedOpenAI){data.company='OpenAI';openaiMatched++;}
+        if(verifiedOpenAI)data.company='OpenAI';
         if(type==='连接人脉')interaction={type:'LinkedIn connection',date:data.lastContact,direction:'CONNECTED',message:'',source:file.name};
       }
       linkedin=clean(linkedin).replace(/\/$/,'');
       if(!name&&!linkedin){skipped++;continue;}
+      const referenceMatched=Boolean(linkedin&&window.OPENAI_REFERENCE_URLS?.has(normUrl(linkedin))),directOpenAI=/\b(open\s*ai|oai)\b/i.test(data.company||'');
+      if(referenceMatched||verifiedOpenAI){data.company='OpenAI';data.notes=[data.notes,referenceMatched?'OpenAI识别：LinkedIn URL命中已核验公开参考库':'OpenAI识别：导入已核验筛选结果'].filter(Boolean).join('\n');}
+      if(referenceMatched||verifiedOpenAI||directOpenAI)openaiMatched++;
       let person=findPerson(name,linkedin);
       if(!person&&!allowCreate){skipped++;continue;}
       if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,company:'',title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;

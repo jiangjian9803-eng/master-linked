@@ -22,7 +22,7 @@
   "build": {
     "appId": "com.masterlinked.app",
     "productName": "Master Linked",
-    "files": ["index.html", "app.js", "meeting-reliable.js", "openai-talent.js", "styles.css", "meeting-reliable.css", "openai-talent.css", "manifest.webmanifest", "sw.js", "main.cjs", "README.md", "assets/**/*"],
+    "files": ["index.html", "app.js", "meeting-reliable.js", "openai-reference.js", "openai-talent.js", "styles.css", "meeting-reliable.css", "openai-talent.css", "manifest.webmanifest", "sw.js", "main.cjs", "README.md", "assets/**/*"],
     "icon": "assets/icons/master-linked-1024.png",
     "mac": {"category": "public.app-category.business", "target": ["dmg", "zip"]},
     "win": {"target": ["nsis", "portable"]},
