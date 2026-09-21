@@ -16,12 +16,14 @@
   ];
   const clean=v=>String(v??'').trim();
   const esc=v=>clean(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const canonicalLinkedIn=v=>clean(v).split('?')[0].replace(/\/$/,'').toLowerCase();
   const PAGE_SIZE=50;let currentPage=1;
   let state=JSON.parse(localStorage.getItem(KEY)||'null')||{people:[],selectedTeam:'all'};
   state.people=Array.isArray(state.people)?state.people:[];
   // Remove blank placeholder rows created by older import logic from account-level exports.
   state.people=state.people.filter(p=>!(p.name==='待补充姓名'&&!clean(p.linkedin)));
   state.people.forEach(p=>{if(!Array.isArray(p.interactions))p.interactions=[];});
+  state.people.forEach(p=>{if(p.linkedin&&window.OPENAI_REFERENCE_URLS?.has(canonicalLinkedIn(p.linkedin))){p.company='OpenAI';p.notes=[p.notes,'OpenAI识别：LinkedIn URL命中已核验公开参考库'].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('\n');}});
   localStorage.setItem(KEY,JSON.stringify(state));
   const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
   const statusText={watch:'长期跟踪',target:'重点目标',connect_sent:'已申请 Connect',incoming_invite:'收到 Connect',connected:'已连接',contacted:'已联系',engaged:'有回复',screening:'沟通中',interview:'面试中',offer:'Offer',closed:'暂不推进'};
@@ -70,7 +72,7 @@
     row.push(cell);if(row.some(v=>clean(v)))rows.push(row);return rows;
   }
   const norm=v=>clean(v).toLowerCase().replace(/[\s_-]+/g,'');
-  const normUrl=v=>clean(v).split('?')[0].replace(/\/$/,'').toLowerCase();
+  const normUrl=canonicalLinkedIn;
   const findPerson=(name,linkedin)=>state.people.find(p=>(linkedin&&normUrl(p.linkedin)===normUrl(linkedin))||(!linkedin&&name&&norm(p.name)===norm(name)));
   const addInteraction=(person,item)=>{person.interactions=Array.isArray(person.interactions)?person.interactions:[];const key=[item.type,item.date,item.direction,item.message].map(norm).join('|');if(!person.interactions.some(x=>[x.type,x.date,x.direction,x.message].map(norm).join('|')===key))person.interactions.push(item);};
   const rank={watch:0,target:1,connect_sent:2,incoming_invite:2,connected:3,contacted:4,engaged:5,screening:6,interview:7,offer:8,closed:9};
