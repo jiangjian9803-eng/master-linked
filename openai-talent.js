@@ -43,7 +43,7 @@
     <label>关系 / 招聘状态<select id="oaiStatus">${Object.entries(statusText).map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select></label><label>最近联系日期<input id="oaiLastContact" type="date"></label>
     <label class="wide">下一步动作<input id="oaiNextAction" placeholder="例如：10 月 5 日跟进；请技术专家评估"></label><label class="wide">证据 / 来源<input id="oaiSource" placeholder="公开主页、论文、本人消息或内部沟通来源"></label>
     <label class="wide">招聘备注<textarea id="oaiNotes" placeholder="只记录与岗位匹配、沟通和跟进相关的信息"></textarea></label>
-    <menu><button value="cancel" class="oai-button secondary">取消</button><button id="oaiSave" type="submit" class="oai-button">保存</button></menu></div></form></dialog>`;
+    <menu><button id="oaiCancel" type="button" class="oai-button secondary">取消</button><button id="oaiSave" type="submit" class="oai-button">保存</button></menu></div></form></dialog>`;
 
   const $=s=>root.querySelector(s);
   const teamName=id=>teams.find(t=>t.id===id)?.name||'待确认';
@@ -60,6 +60,7 @@
   }
   function openDialog(person){const p=person||{};$('#oaiDialog').dataset.id=p.id||'';$('#oaiDialogTitle').textContent=person?'编辑人才':'新增人才';[['#oaiName','name'],['#oaiLinkedin','linkedin'],['#oaiCompany','company'],['#oaiTitle','title'],['#oaiLocation','location'],['#oaiFocus','focus'],['#oaiLastContact','lastContact'],['#oaiNextAction','nextAction'],['#oaiSource','source'],['#oaiNotes','notes']].forEach(([s,k])=>$(s).value=p[k]||'');$('#oaiTeam').value=p.team||'unknown';$('#oaiPriority').value=p.priority||'B';$('#oaiLevel19Field').value=p.level19||'review';$('#oaiStatus').value=p.status||'watch';$('#oaiDialog').showModal();}
   $('#oaiAdd').onclick=()=>openDialog();
+  $('#oaiCancel').onclick=()=>$('#oaiDialog').close();
   $('#oaiForm').onsubmit=e=>{e.preventDefault();const id=$('#oaiDialog').dataset.id;const data={name:clean($('#oaiName').value),linkedin:clean($('#oaiLinkedin').value).replace(/\/$/,''),company:clean($('#oaiCompany').value),title:clean($('#oaiTitle').value),location:clean($('#oaiLocation').value),team:$('#oaiTeam').value,focus:clean($('#oaiFocus').value),priority:$('#oaiPriority').value,level19:$('#oaiLevel19Field').value,status:$('#oaiStatus').value,lastContact:$('#oaiLastContact').value,nextAction:clean($('#oaiNextAction').value),source:clean($('#oaiSource').value),notes:clean($('#oaiNotes').value),updatedAt:new Date().toISOString()};const existing=state.people.find(p=>p.id===id);if(existing)Object.assign(existing,data);else state.people.unshift({id:crypto.randomUUID(),interactions:[],...data});save();$('#oaiDialog').close();render();};
   $('#oaiTable').onclick=e=>{const edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit)openDialog(state.people.find(p=>p.id===edit.dataset.edit));if(del){const p=state.people.find(x=>x.id===del.dataset.delete);if(p&&confirm(`删除 ${p.name}？`)){state.people=state.people.filter(x=>x.id!==p.id);save();render();}}};
   $('#oaiPager').onclick=e=>{const b=e.target.closest('[data-page]');if(!b)return;currentPage+=b.dataset.page==='next'?1:-1;render();};
