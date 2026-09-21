@@ -96,7 +96,8 @@
         name=get(row,'From','Sender');linkedin=get(row,'Sender Profile URL','Sender Profile Url');data={status:'contacted',lastContact:get(row,'Date')};interaction={type:'LinkedIn message',date:get(row,'Date'),direction:'MESSAGE',message:get(row,'Content','Message'),source:file.name};
       }else{
         name=[get(row,'First Name'),get(row,'Last Name')].filter(Boolean).join(' ')||get(row,'Name','Full Name','姓名');linkedin=get(row,'URL','LinkedIn URL','Profile URL','LinkedIn','领英链接');
-        data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','Research Function','方向'),company:get(row,'Company','公司'),status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact','Invitation Date'),notes:get(row,'Notes','备注')};
+        data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','Research Function','方向'),company:get(row,'Company','公司'),team:get(row,'Team','OpenAI Team','团队')||'unknown',status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact','Invitation Date'),notes:get(row,'Notes','备注')};
+        const teamConfidence=get(row,'Team Confidence'),teamEvidence=get(row,'Team Evidence');if(teamConfidence||teamEvidence)data.notes=[data.notes,`团队判断：${teamConfidence||'待核验'}；${teamEvidence||''}`].filter(Boolean).join('\n');
         if(verifiedOpenAI){data.company='OpenAI';openaiMatched++;}
         if(type==='连接人脉')interaction={type:'LinkedIn connection',date:data.lastContact,direction:'CONNECTED',message:'',source:file.name};
       }
@@ -106,7 +107,7 @@
       if(!person&&!allowCreate){skipped++;continue;}
       if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,company:'',title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;
       ['name','linkedin','company','title','location','focus','notes'].forEach(k=>{if(data[k]&&!person[k])person[k]=data[k];});
-      if(verifiedOpenAI){person.company='OpenAI';if(data.title)person.title=data.title;if(data.focus)person.focus=data.focus;}
+      if(verifiedOpenAI){person.company='OpenAI';if(data.title)person.title=data.title;if(data.focus)person.focus=data.focus;if(data.team&&data.team!=='unknown')person.team=data.team;if(data.notes)person.notes=data.notes;}
       if(data.status&&(rank[data.status]??0)>(rank[person.status]??0))person.status=data.status;
       if(data.lastContact)person.lastContact=data.lastContact;person.source=[person.source,file.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('; ');person.updatedAt=new Date().toISOString();if(interaction)addInteraction(person,interaction);
     }
