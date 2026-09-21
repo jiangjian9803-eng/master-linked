@@ -7,6 +7,8 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>Master Linked</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="meeting-reliable.css" />
+  <link rel="stylesheet" href="openai-talent.css" />
   <style>.map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.map-stat,.map-panel{background:#fff;border:1px solid #e4eaf1;border-radius:10px;padding:18px}.map-stat span{display:block;color:#718096;font-size:13px}.map-stat strong{display:block;color:#0a66c2;font-size:28px;margin-top:6px}.map-panel{margin-bottom:18px}.map-panel h2{font-size:17px;margin:0 0 14px}.company-map{display:grid;gap:10px}.company-row{display:grid;grid-template-columns:minmax(120px,1fr) 3fr 42px;gap:10px;align-items:center;font-size:13px}.company-bar{height:10px;background:#e8f2fc;border-radius:99px;overflow:hidden}.company-bar i{display:block;height:100%;background:#0a66c2;border-radius:99px}.map-search{width:100%;border:1px solid #ccd6e2;border-radius:7px;padding:10px 12px;font-size:14px;margin-bottom:12px}.map-people{display:grid;gap:8px}.map-person{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #edf0f4;border-radius:7px;cursor:pointer}.map-person:hover{border-color:#0a66c2;background:#f8fbff}.map-person small{color:#718096}.map-person .status{align-self:center}.person-detail{margin-top:14px;padding:16px;border:1px solid #dbe5ef;border-radius:8px;line-height:1.8;min-height:70px}@media(max-width:700px){.map-grid{grid-template-columns:1fr}.company-row{grid-template-columns:1fr 2fr 35px}}</style>
 </head>
 <body>
@@ -19,6 +21,7 @@
       <button class="nav" data-view="template">消息模板</button>
       <button class="nav active" data-view="contacts">联系人</button>
       <button class="nav" data-view="connections-map">Connections Map</button>
+      <button class="nav" data-view="openai-talent">OpenAI 人才库</button>
       <button class="nav" data-view="linked-mcp">Linked MCP</button>
       <button class="nav" data-view="email-outreach">Word 群发邮件</button>
       <button class="nav" data-view="meeting-records">会议记录</button>
@@ -34,6 +37,7 @@
         <div id="contactList" class="cards"></div>
       </div>
       <div id="connections-mapView" class="view hidden"><div class="page-head"><div><h1>Connections Map</h1><p>人才分布</p></div></div><div class="map-grid"><div class="map-stat"><span>联系人总数</span><strong id="mapTotal">0</strong></div><div class="map-stat"><span>覆盖公司 / 学校</span><strong id="mapCompanies">0</strong></div><div class="map-stat"><span>已发送</span><strong id="mapSent">0</strong></div></div><div class="map-panel"><h2>按公司 / 学校分布</h2><div id="companyMap" class="company-map"></div></div><div class="map-panel"><h2>人才档案</h2><input id="mapSearch" class="map-search" placeholder="搜索姓名、公司、职位" /><div id="mapPeople" class="map-people"></div><div id="personDetail" class="person-detail muted">点击一位联系人查看完整档案。</div></div></div>
+      <div id="openai-talentView" class="view hidden"></div>
       <div id="linked-mcpView" class="view hidden"><div class="page-head"><div><h1>Linked MCP</h1><p>LinkedIn 官方授权接入指引</p></div></div><div class="panel mcp-guide"><h2>手动登录与授权流程</h2><ol><li>点击下方按钮，在新窗口手动登录 LinkedIn。</li><li>前往 LinkedIn Developer Portal 创建应用并申请官方 API 权限。</li><li>配置 OAuth 回调地址，由你本人确认授权。</li><li>将获批的官方连接器配置到 MCP；APP 不接收或保存密码、验证码和 access token。</li></ol><div class="actions"><a class="button secondary" href="https://www.linkedin.com/login" target="_blank" rel="noopener">打开 LinkedIn 登录</a><a class="button secondary" href="https://www.linkedin.com/developers/" target="_blank" rel="noopener">打开 Developer Portal</a></div><p class="muted">说明：LinkedIn 官方 API 是否提供个人私信权限，以实际审批结果为准。未获官方授权时，请使用人工确认发送。</p></div></div>
       <div id="email-outreachView" class="view hidden"><div class="page-head"><div><h1>Word 群发邮件</h1><p>用 Excel 联系人表和 Word 话术，快速完成邮件群发</p></div></div><div class="panel word-merge"><h2>Word 群发</h2><p>上传联系人表格和联系话术，检查后直接使用本机 Word 中已配置的 Outlook 邮箱发送。</p><div class="field"><label>联系人 Excel 表格<input id="wordExcelInput" type="file" accept=".xlsx,.xls,.csv" /></label></div><div class="field"><label>联系话术 Word 模板<input id="wordTemplateInput" type="file" accept=".docx,.doc" /></label></div><p id="wordMergeStatus" class="muted">请选择上面两个文件。</p><button id="wordMergeBtn" class="button" disabled>检查文件并开始 Word 群发</button><p class="muted">不需要重新打开或登录邮箱；文件只在本机处理，发送由你确认。</p></div></div>
       <div id="meeting-recordsView" class="view hidden"><div class="page-head"><div><h1>会议记录</h1><p>录音、转写并按模板整理会议纪要</p></div></div><div class="panel meeting-panel"><h2>第一步：录音或粘贴文字</h2><div class="actions"><button id="recordStartBtn" class="button">开始录音</button><button id="recordStopBtn" class="secondary" disabled>停止录音</button></div><p id="recordStatus" class="muted">录音仅保存在本机；也可以直接粘贴已有转写。</p><a id="downloadRecording" class="button secondary hidden" download="meeting-recording.webm">下载录音</a><textarea id="meetingTranscript" class="template" placeholder="在这里粘贴会议转写内容，或使用录音后补充文字"></textarea><h2>第二步：会议纪要模板</h2><textarea id="meetingTemplate" class="template">会议主题：\n会议日期：\n\n核心结论：\n\n重点事项与负责人：\n- \n\n时间节点：\n- \n\n后续跟进：\n- </textarea><div class="actions"><button id="summarizeMeetingBtn" class="button">按模板生成会议纪要</button><button id="saveMeetingBtn" class="secondary">保存本条纪要</button></div><h2>会议纪要</h2><textarea id="meetingSummary" class="template" placeholder="生成后的会议纪要会显示在这里"></textarea><p class="muted">录音在本机完成；自动转文字取决于浏览器支持，不影响录音和保存。</p></div></div>
@@ -103,6 +107,8 @@
   <script src="contactout-prompt.js"></script>
   <script src="contactout-batch.js"></script>
   <script src="app.js"></script>
+  <script src="meeting-reliable.js"></script>
+  <script src="openai-talent.js"></script>
   <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
 </html>
