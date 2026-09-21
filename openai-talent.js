@@ -82,7 +82,8 @@
     else if(filename.includes('connection')||headers.includes('connectedon'))type='连接人脉';
     else if(/company.?follows|education|positions|email.?addresses|registration|recommendations|endorsement|search/i.test(filename))type='非候选人资料';
     if(type==='非候选人资料')return {file:file.name,type,rows:rows.length,added:0,updated:0,skipped:rows.length};
-    let added=0,updated=0,skipped=0;
+    const verifiedOpenAI=headers.includes('openaimatchbasis');
+    let added=0,updated=0,skipped=0,openaiMatched=0;
     for(const row of rows){
       let name='',linkedin='',data={},interaction=null,allowCreate=['候选人','邀请记录','连接人脉'].includes(type);
       if(type==='邀请记录'){
@@ -92,7 +93,8 @@
         name=get(row,'From','Sender');linkedin=get(row,'Sender Profile URL','Sender Profile Url');data={status:'contacted',lastContact:get(row,'Date')};interaction={type:'LinkedIn message',date:get(row,'Date'),direction:'MESSAGE',message:get(row,'Content','Message'),source:file.name};
       }else{
         name=[get(row,'First Name'),get(row,'Last Name')].filter(Boolean).join(' ')||get(row,'Name','Full Name','姓名');linkedin=get(row,'URL','LinkedIn URL','Profile URL','LinkedIn','领英链接');
-        data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','方向'),company:get(row,'Company','公司'),status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact'),notes:get(row,'Notes','备注')};
+        data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','Research Function','方向'),company:get(row,'Company','公司'),status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact','Invitation Date'),notes:get(row,'Notes','备注')};
+        if(verifiedOpenAI){data.company='OpenAI';openaiMatched++;}
         if(type==='连接人脉')interaction={type:'LinkedIn connection',date:data.lastContact,direction:'CONNECTED',message:'',source:file.name};
       }
       linkedin=clean(linkedin).replace(/\/$/,'');
@@ -101,12 +103,13 @@
       if(!person&&!allowCreate){skipped++;continue;}
       if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,company:'',title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;
       ['name','linkedin','company','title','location','focus','notes'].forEach(k=>{if(data[k]&&!person[k])person[k]=data[k];});
+      if(verifiedOpenAI){person.company='OpenAI';if(data.title)person.title=data.title;if(data.focus)person.focus=data.focus;}
       if(data.status&&(rank[data.status]??0)>(rank[person.status]??0))person.status=data.status;
       if(data.lastContact)person.lastContact=data.lastContact;person.source=[person.source,file.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('; ');person.updatedAt=new Date().toISOString();if(interaction)addInteraction(person,interaction);
     }
-    return {file:file.name,type,rows:rows.length,added,updated,skipped};
+    return {file:file.name,type,rows:rows.length,added,updated,skipped,openaiMatched};
   }
-  $('#oaiImport').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const reports=[];for(const file of files){try{reports.push(importFile(file,parseCsv(await file.text())));}catch(err){reports.push({file:file.name,type:'读取失败',rows:0,added:0,updated:0,skipped:0});}}save();render();e.target.value='';const totals=reports.reduce((a,r)=>({added:a.added+r.added,updated:a.updated+r.updated,skipped:a.skipped+r.skipped}),{added:0,updated:0,skipped:0});$('#oaiImportStatus').innerHTML=`<strong>导入完成：</strong>新增 ${totals.added}，更新 ${totals.updated}，跳过无关/未匹配 ${totals.skipped}。<br>${reports.map(r=>`${esc(r.file)}：${r.type}，${r.rows} 行，新增 ${r.added}，更新 ${r.updated}，跳过 ${r.skipped}`).join('<br>')}`;};
+  $('#oaiImport').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const reports=[];for(const file of files){try{reports.push(importFile(file,parseCsv(await file.text())));}catch(err){reports.push({file:file.name,type:'读取失败',rows:0,added:0,updated:0,skipped:0,openaiMatched:0});}}save();render();e.target.value='';const totals=reports.reduce((a,r)=>({added:a.added+r.added,updated:a.updated+r.updated,skipped:a.skipped+r.skipped,openaiMatched:a.openaiMatched+(r.openaiMatched||0)}),{added:0,updated:0,skipped:0,openaiMatched:0});$('#oaiImportStatus').innerHTML=`<strong>导入完成：</strong>OpenAI 命中 ${totals.openaiMatched}，新增 ${totals.added}，更新 ${totals.updated}，跳过无关/未匹配 ${totals.skipped}。<br>${reports.map(r=>`${esc(r.file)}：${r.type}，${r.rows} 行，OpenAI ${r.openaiMatched||0}，新增 ${r.added}，更新 ${r.updated}，跳过 ${r.skipped}`).join('<br>')}`;};
   $('#oaiExport').onclick=()=>{const fields=['name','linkedin','company','title','location','team','focus','priority','level19','status','lastContact','nextAction','source','notes','updatedAt'],cell=v=>`"${clean(v).replaceAll('"','""')}"`;const csv=['\ufeff'+fields.join(','),...state.people.map(p=>fields.map(f=>cell(p[f])).join(','))].join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`openai-talent-pipeline-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);};
   render();
 })();
