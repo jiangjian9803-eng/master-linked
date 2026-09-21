@@ -18,12 +18,15 @@
   const esc=v=>clean(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   let state=JSON.parse(localStorage.getItem(KEY)||'null')||{people:[],selectedTeam:'all'};
   state.people=Array.isArray(state.people)?state.people:[];
+  // Remove blank placeholder rows created by older import logic from account-level exports.
+  state.people=state.people.filter(p=>!(p.name==='待补充姓名'&&!clean(p.linkedin)));
   state.people.forEach(p=>{if(!Array.isArray(p.interactions))p.interactions=[];});
+  localStorage.setItem(KEY,JSON.stringify(state));
   const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
   const statusText={watch:'长期跟踪',target:'重点目标',connect_sent:'已申请 Connect',incoming_invite:'收到 Connect',connected:'已连接',contacted:'已联系',engaged:'有回复',screening:'沟通中',interview:'面试中',offer:'Offer',closed:'暂不推进'};
   root.innerHTML=`<div class="oai-shell">
     <section class="oai-hero"><div><h1>OpenAI 人才情报与招聘跟进</h1><p>面向华为加拿大研究所北美高端社招：按 OpenAI 团队、技术方向、关系状态和招聘阶段持续维护人才数据。</p></div><div class="oai-actions"><label class="oai-button secondary">批量导入 LinkedIn CSV<input id="oaiImport" type="file" accept=".csv,text/csv" multiple hidden></label><button id="oaiAdd" class="oai-button">新增人才</button><button id="oaiExport" class="oai-button secondary">导出 CSV</button></div></section>
-    <div id="oaiImportStatus" class="oai-import-status"><strong>支持一次选择多个文件：</strong>Connections、Invitations、Messages 以及工作台导出的候选人 CSV。LinkedIn 全量文件只匹配和补充已有 OpenAI 人才，避免无关联系人污染人才库。</div>
+    <div id="oaiImportStatus" class="oai-import-status"><strong>支持一次选择多个文件：</strong>Connections 和 Invitations 会创建真实联系人并按 LinkedIn URL / 姓名去重；Messages 会补充沟通记录。账号本人的 Education、Positions、Email Addresses 以及 Company Follows 不会被误建为候选人。</div>
     <div class="oai-callout"><strong>数据原则：</strong>只记录与招聘相关的公开职业信息和你本人产生的沟通记录；不要记录族裔推断、健康、宗教、政治观点等无关敏感信息。团队人数和负责人来自用户提供的架构图，属于研究假设，需定期核验。</div>
     <section class="oai-kpis"><div class="oai-kpi"><span>人才总数</span><strong id="oaiTotal">0</strong></div><div class="oai-kpi"><span>重点目标</span><strong id="oaiTargets">0</strong></div><div class="oai-kpi"><span>已申请 Connect</span><strong id="oaiRequested">0</strong></div><div class="oai-kpi"><span>已连接 / 有回复</span><strong id="oaiEngaged">0</strong></div><div class="oai-kpi"><span>19+ 潜力</span><strong id="oaiLevel19">0</strong></div></section>
     <section class="oai-section"><div class="oai-section-head"><div><h2>团队地图</h2><p>点击团队即可筛选人才；人数为架构图中的估算。</p></div><button id="oaiResetTeam" class="oai-button secondary">查看全部</button></div><div id="oaiOrg" class="oai-org"></div></section>
@@ -70,14 +73,18 @@
   const rank={watch:0,target:1,connect_sent:2,incoming_invite:2,connected:3,contacted:4,engaged:5,screening:6,interview:7,offer:8,closed:9};
   function importFile(file,rows){
     if(rows.length<2)return {file:file.name,type:'空文件',rows:0,added:0,updated:0,skipped:0};
+    const headerAt=rows.slice(0,12).findIndex(r=>{const h=r.map(norm);return h.includes('direction')||h.includes('connectedon')||h.includes('firstname')||h.includes('fullname')||h.includes('linkedinurl')||h.includes('conversationid');});
+    if(headerAt>0)rows=rows.slice(headerAt);
     const headers=rows.shift().map(norm),get=(row,...keys)=>{for(const key of keys){const i=headers.indexOf(norm(key));if(i>=0&&clean(row[i]))return clean(row[i]);}return '';};
     const filename=file.name.toLowerCase();let type='候选人';
     if(filename.includes('invitation')||headers.includes('direction')&&headers.includes('inviterprofileurl'))type='邀请记录';
     else if(filename.includes('message')||headers.includes('conversationid')&&headers.includes('content'))type='消息记录';
     else if(filename.includes('connection')||headers.includes('connectedon'))type='连接人脉';
+    else if(/company.?follows|education|positions|email.?addresses|registration|recommendations|endorsement|search/i.test(filename))type='非候选人资料';
+    if(type==='非候选人资料')return {file:file.name,type,rows:rows.length,added:0,updated:0,skipped:rows.length};
     let added=0,updated=0,skipped=0;
     for(const row of rows){
-      let name='',linkedin='',data={},interaction=null,allowCreate=type==='候选人';
+      let name='',linkedin='',data={},interaction=null,allowCreate=['候选人','邀请记录','连接人脉'].includes(type);
       if(type==='邀请记录'){
         const direction=get(row,'Direction').toUpperCase();name=get(row,direction==='OUTGOING'?'To':'From');linkedin=get(row,direction==='OUTGOING'?'inviteeProfileUrl':'inviterProfileUrl');
         data={status:direction==='OUTGOING'?'connect_sent':'incoming_invite',lastContact:get(row,'Sent At')};interaction={type:'LinkedIn invitation',date:get(row,'Sent At'),direction,message:get(row,'Message'),source:file.name};
@@ -86,10 +93,11 @@
       }else{
         name=[get(row,'First Name'),get(row,'Last Name')].filter(Boolean).join(' ')||get(row,'Name','Full Name','姓名');linkedin=get(row,'URL','LinkedIn URL','Profile URL','LinkedIn','领英链接');
         data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','方向'),company:get(row,'Company','公司'),status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact'),notes:get(row,'Notes','备注')};
-        allowCreate=type==='候选人'||/openai/i.test(data.company);
         if(type==='连接人脉')interaction={type:'LinkedIn connection',date:data.lastContact,direction:'CONNECTED',message:'',source:file.name};
       }
-      linkedin=clean(linkedin).replace(/\/$/,'');let person=findPerson(name,linkedin);
+      linkedin=clean(linkedin).replace(/\/$/,'');
+      if(!name&&!linkedin){skipped++;continue;}
+      let person=findPerson(name,linkedin);
       if(!person&&!allowCreate){skipped++;continue;}
       if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;
       ['name','linkedin','title','location','focus','notes'].forEach(k=>{if(data[k]&&!person[k])person[k]=data[k];});
