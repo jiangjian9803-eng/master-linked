@@ -18,10 +18,12 @@
   const esc=v=>clean(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   let state=JSON.parse(localStorage.getItem(KEY)||'null')||{people:[],selectedTeam:'all'};
   state.people=Array.isArray(state.people)?state.people:[];
+  state.people.forEach(p=>{if(!Array.isArray(p.interactions))p.interactions=[];});
   const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
-  const statusText={watch:'长期跟踪',target:'重点目标',connect_sent:'已申请 Connect',connected:'已连接',contacted:'已联系',engaged:'有回复',screening:'沟通中',interview:'面试中',offer:'Offer',closed:'暂不推进'};
+  const statusText={watch:'长期跟踪',target:'重点目标',connect_sent:'已申请 Connect',incoming_invite:'收到 Connect',connected:'已连接',contacted:'已联系',engaged:'有回复',screening:'沟通中',interview:'面试中',offer:'Offer',closed:'暂不推进'};
   root.innerHTML=`<div class="oai-shell">
-    <section class="oai-hero"><div><h1>OpenAI 人才情报与招聘跟进</h1><p>面向华为加拿大研究所北美高端社招：按 OpenAI 团队、技术方向、关系状态和招聘阶段持续维护人才数据。</p></div><div class="oai-actions"><label class="oai-button secondary">导入 CSV<input id="oaiImport" type="file" accept=".csv,text/csv" hidden></label><button id="oaiAdd" class="oai-button">新增人才</button><button id="oaiExport" class="oai-button secondary">导出 CSV</button></div></section>
+    <section class="oai-hero"><div><h1>OpenAI 人才情报与招聘跟进</h1><p>面向华为加拿大研究所北美高端社招：按 OpenAI 团队、技术方向、关系状态和招聘阶段持续维护人才数据。</p></div><div class="oai-actions"><label class="oai-button secondary">批量导入 LinkedIn CSV<input id="oaiImport" type="file" accept=".csv,text/csv" multiple hidden></label><button id="oaiAdd" class="oai-button">新增人才</button><button id="oaiExport" class="oai-button secondary">导出 CSV</button></div></section>
+    <div id="oaiImportStatus" class="oai-import-status"><strong>支持一次选择多个文件：</strong>Connections、Invitations、Messages 以及工作台导出的候选人 CSV。LinkedIn 全量文件只匹配和补充已有 OpenAI 人才，避免无关联系人污染人才库。</div>
     <div class="oai-callout"><strong>数据原则：</strong>只记录与招聘相关的公开职业信息和你本人产生的沟通记录；不要记录族裔推断、健康、宗教、政治观点等无关敏感信息。团队人数和负责人来自用户提供的架构图，属于研究假设，需定期核验。</div>
     <section class="oai-kpis"><div class="oai-kpi"><span>人才总数</span><strong id="oaiTotal">0</strong></div><div class="oai-kpi"><span>重点目标</span><strong id="oaiTargets">0</strong></div><div class="oai-kpi"><span>已申请 Connect</span><strong id="oaiRequested">0</strong></div><div class="oai-kpi"><span>已连接 / 有回复</span><strong id="oaiEngaged">0</strong></div><div class="oai-kpi"><span>19+ 潜力</span><strong id="oaiLevel19">0</strong></div></section>
     <section class="oai-section"><div class="oai-section-head"><div><h2>团队地图</h2><p>点击团队即可筛选人才；人数为架构图中的估算。</p></div><button id="oaiResetTeam" class="oai-button secondary">查看全部</button></div><div id="oaiOrg" class="oai-org"></div></section>
@@ -45,7 +47,7 @@
   function render(){
     const rows=filtered();
     $('#oaiTotal').textContent=state.people.length;$('#oaiTargets').textContent=state.people.filter(p=>p.priority==='A'||p.status==='target').length;$('#oaiRequested').textContent=state.people.filter(p=>p.status==='connect_sent').length;$('#oaiEngaged').textContent=state.people.filter(p=>['connected','engaged','screening','interview','offer'].includes(p.status)).length;$('#oaiLevel19').textContent=state.people.filter(p=>p.level19==='yes').length;$('#oaiResultCount').textContent=`${rows.length} 条记录`;
-    $('#oaiTable').innerHTML=rows.length?`<table class="oai-table"><thead><tr><th>姓名</th><th>团队</th><th>当前职位</th><th>方向</th><th>优先级</th><th>19+</th><th>状态</th><th>下一步</th><th>操作</th></tr></thead><tbody>${rows.map(p=>`<tr><td>${p.linkedin?`<a class="oai-link" href="${esc(p.linkedin)}" target="_blank" rel="noopener">${esc(p.name)}</a>`:esc(p.name)}</td><td>${esc(teamName(p.team))}</td><td>${esc(p.title||'待补充')}<br><small>${esc(p.location||'')}</small></td><td>${esc(p.focus||'待补充')}</td><td><span class="oai-chip ${p.priority==='A'?'hot':''}">${esc(p.priority||'B')}</span></td><td>${p.level19==='yes'?'是':p.level19==='no'?'否':'待判断'}</td><td><span class="oai-chip">${esc(statusText[p.status]||statusText.watch)}</span></td><td>${esc(p.nextAction||'待安排')}</td><td><div class="oai-row-actions"><button class="secondary" data-edit="${p.id}">编辑</button><button class="danger" data-delete="${p.id}">删除</button></div></td></tr>`).join('')}</tbody></table>`:'<div class="oai-empty">暂无记录。可以新增人才，或导入 LinkedIn / 招聘 CSV。</div>';
+    $('#oaiTable').innerHTML=rows.length?`<table class="oai-table"><thead><tr><th>姓名</th><th>团队</th><th>当前职位</th><th>方向</th><th>优先级</th><th>19+</th><th>状态</th><th>互动</th><th>下一步</th><th>操作</th></tr></thead><tbody>${rows.map(p=>`<tr><td>${p.linkedin?`<a class="oai-link" href="${esc(p.linkedin)}" target="_blank" rel="noopener">${esc(p.name)}</a>`:esc(p.name)}</td><td>${esc(teamName(p.team))}</td><td>${esc(p.title||'待补充')}<br><small>${esc(p.location||'')}</small></td><td>${esc(p.focus||'待补充')}</td><td><span class="oai-chip ${p.priority==='A'?'hot':''}">${esc(p.priority||'B')}</span></td><td>${p.level19==='yes'?'是':p.level19==='no'?'否':'待判断'}</td><td><span class="oai-chip">${esc(statusText[p.status]||statusText.watch)}</span></td><td>${(p.interactions||[]).length}</td><td>${esc(p.nextAction||'待安排')}</td><td><div class="oai-row-actions"><button class="secondary" data-edit="${p.id}">编辑</button><button class="danger" data-delete="${p.id}">删除</button></div></td></tr>`).join('')}</tbody></table>`:'<div class="oai-empty">暂无记录。可以新增人才，或导入 LinkedIn / 招聘 CSV。</div>';
     renderOrg();
   }
   function openDialog(person){const p=person||{};$('#oaiDialog').dataset.id=p.id||'';$('#oaiDialogTitle').textContent=person?'编辑人才':'新增人才';[['#oaiName','name'],['#oaiLinkedin','linkedin'],['#oaiTitle','title'],['#oaiLocation','location'],['#oaiFocus','focus'],['#oaiLastContact','lastContact'],['#oaiNextAction','nextAction'],['#oaiSource','source'],['#oaiNotes','notes']].forEach(([s,k])=>$(s).value=p[k]||'');$('#oaiTeam').value=p.team||'unknown';$('#oaiPriority').value=p.priority||'B';$('#oaiLevel19Field').value=p.level19||'review';$('#oaiStatus').value=p.status||'watch';$('#oaiDialog').showModal();}
@@ -55,8 +57,48 @@
   $('#oaiOrg').onclick=e=>{const b=e.target.closest('[data-team]');if(!b)return;state.selectedTeam=b.dataset.team;$('#oaiTeamFilter').value=b.dataset.team;render();};
   $('#oaiResetTeam').onclick=()=>{state.selectedTeam='all';$('#oaiTeamFilter').value='all';render();};
   ['#oaiSearch','#oaiTeamFilter','#oaiStatusFilter','#oaiPriorityFilter','#oaiLevelFilter'].forEach(s=>$(s).addEventListener(s==='#oaiSearch'?'input':'change',()=>{if(s==='#oaiTeamFilter')state.selectedTeam=$(s).value;render();}));
-  const parseCsvLine=line=>{const out=[];let cur='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&quoted){cur+='"';i++;}else if(c==='"')quoted=!quoted;else if(c===','&&!quoted){out.push(cur.trim());cur='';}else cur+=c;}out.push(cur.trim());return out;};
-  $('#oaiImport').onchange=async e=>{const file=e.target.files[0];if(!file)return;const lines=(await file.text()).split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)return;const headers=parseCsvLine(lines.shift()).map(x=>x.toLowerCase());const find=(row,patterns)=>{const i=headers.findIndex(h=>patterns.some(p=>p.test(h)));return i>=0?clean(row[i]):''};let added=0,updated=0;for(const line of lines){const row=parseCsvLine(line),name=find(row,[/^name$/,/full name/,/姓名/]),linkedin=find(row,[/linkedin/,/profile url/,/^url$/]).replace(/\/$/,'');if(!name&&!linkedin)continue;const data={name:name||'待补充姓名',linkedin,title:find(row,[/current role/,/title/,/position/,/职位/]),location:find(row,[/location/,/city/,/地区/]),focus:find(row,[/focus/,/skill/,/方向/]),team:'unknown',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',updatedAt:new Date().toISOString()};const old=state.people.find(p=>(linkedin&&p.linkedin===linkedin)||(!linkedin&&p.name.toLowerCase()===data.name.toLowerCase()));if(old){Object.keys(data).forEach(k=>{if(data[k]&&!old[k])old[k]=data[k]});updated++;}else{state.people.push({id:crypto.randomUUID(),...data});added++;}}save();render();e.target.value='';alert(`导入完成：新增 ${added} 人，合并更新 ${updated} 人。`);};
+  function parseCsv(text){
+    const rows=[];let row=[],cell='',quoted=false;
+    text=String(text||'').replace(/^\ufeff/,'');
+    for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(cell);cell='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(v=>clean(v)))rows.push(row);row=[];cell='';}else cell+=c;}
+    row.push(cell);if(row.some(v=>clean(v)))rows.push(row);return rows;
+  }
+  const norm=v=>clean(v).toLowerCase().replace(/[\s_-]+/g,'');
+  const normUrl=v=>clean(v).split('?')[0].replace(/\/$/,'').toLowerCase();
+  const findPerson=(name,linkedin)=>state.people.find(p=>(linkedin&&normUrl(p.linkedin)===normUrl(linkedin))||(!linkedin&&name&&norm(p.name)===norm(name)));
+  const addInteraction=(person,item)=>{person.interactions=Array.isArray(person.interactions)?person.interactions:[];const key=[item.type,item.date,item.direction,item.message].map(norm).join('|');if(!person.interactions.some(x=>[x.type,x.date,x.direction,x.message].map(norm).join('|')===key))person.interactions.push(item);};
+  const rank={watch:0,target:1,connect_sent:2,incoming_invite:2,connected:3,contacted:4,engaged:5,screening:6,interview:7,offer:8,closed:9};
+  function importFile(file,rows){
+    if(rows.length<2)return {file:file.name,type:'空文件',rows:0,added:0,updated:0,skipped:0};
+    const headers=rows.shift().map(norm),get=(row,...keys)=>{for(const key of keys){const i=headers.indexOf(norm(key));if(i>=0&&clean(row[i]))return clean(row[i]);}return '';};
+    const filename=file.name.toLowerCase();let type='候选人';
+    if(filename.includes('invitation')||headers.includes('direction')&&headers.includes('inviterprofileurl'))type='邀请记录';
+    else if(filename.includes('message')||headers.includes('conversationid')&&headers.includes('content'))type='消息记录';
+    else if(filename.includes('connection')||headers.includes('connectedon'))type='连接人脉';
+    let added=0,updated=0,skipped=0;
+    for(const row of rows){
+      let name='',linkedin='',data={},interaction=null,allowCreate=type==='候选人';
+      if(type==='邀请记录'){
+        const direction=get(row,'Direction').toUpperCase();name=get(row,direction==='OUTGOING'?'To':'From');linkedin=get(row,direction==='OUTGOING'?'inviteeProfileUrl':'inviterProfileUrl');
+        data={status:direction==='OUTGOING'?'connect_sent':'incoming_invite',lastContact:get(row,'Sent At')};interaction={type:'LinkedIn invitation',date:get(row,'Sent At'),direction,message:get(row,'Message'),source:file.name};
+      }else if(type==='消息记录'){
+        name=get(row,'From','Sender');linkedin=get(row,'Sender Profile URL','Sender Profile Url');data={status:'contacted',lastContact:get(row,'Date')};interaction={type:'LinkedIn message',date:get(row,'Date'),direction:'MESSAGE',message:get(row,'Content','Message'),source:file.name};
+      }else{
+        name=[get(row,'First Name'),get(row,'Last Name')].filter(Boolean).join(' ')||get(row,'Name','Full Name','姓名');linkedin=get(row,'URL','LinkedIn URL','Profile URL','LinkedIn','领英链接');
+        data={title:get(row,'Position','Title','Current Role','职位'),location:get(row,'Location','City','地区'),focus:get(row,'Focus','Skills','方向'),company:get(row,'Company','公司'),status:type==='连接人脉'?'connected':get(row,'Status')||'watch',lastContact:get(row,'Connected On','Last Contact'),notes:get(row,'Notes','备注')};
+        allowCreate=type==='候选人'||/openai/i.test(data.company);
+        if(type==='连接人脉')interaction={type:'LinkedIn connection',date:data.lastContact,direction:'CONNECTED',message:'',source:file.name};
+      }
+      linkedin=clean(linkedin).replace(/\/$/,'');let person=findPerson(name,linkedin);
+      if(!person&&!allowCreate){skipped++;continue;}
+      if(!person){person={id:crypto.randomUUID(),name:name||'待补充姓名',linkedin,title:'',location:'',team:'unknown',focus:'',priority:'B',level19:'review',status:'watch',source:file.name,notes:'',interactions:[],updatedAt:new Date().toISOString()};state.people.push(person);added++;}else updated++;
+      ['name','linkedin','title','location','focus','notes'].forEach(k=>{if(data[k]&&!person[k])person[k]=data[k];});
+      if(data.status&&(rank[data.status]??0)>(rank[person.status]??0))person.status=data.status;
+      if(data.lastContact)person.lastContact=data.lastContact;person.source=[person.source,file.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('; ');person.updatedAt=new Date().toISOString();if(interaction)addInteraction(person,interaction);
+    }
+    return {file:file.name,type,rows:rows.length,added,updated,skipped};
+  }
+  $('#oaiImport').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const reports=[];for(const file of files){try{reports.push(importFile(file,parseCsv(await file.text())));}catch(err){reports.push({file:file.name,type:'读取失败',rows:0,added:0,updated:0,skipped:0});}}save();render();e.target.value='';const totals=reports.reduce((a,r)=>({added:a.added+r.added,updated:a.updated+r.updated,skipped:a.skipped+r.skipped}),{added:0,updated:0,skipped:0});$('#oaiImportStatus').innerHTML=`<strong>导入完成：</strong>新增 ${totals.added}，更新 ${totals.updated}，跳过无关/未匹配 ${totals.skipped}。<br>${reports.map(r=>`${esc(r.file)}：${r.type}，${r.rows} 行，新增 ${r.added}，更新 ${r.updated}，跳过 ${r.skipped}`).join('<br>')}`;};
   $('#oaiExport').onclick=()=>{const fields=['name','linkedin','title','location','team','focus','priority','level19','status','lastContact','nextAction','source','notes','updatedAt'],cell=v=>`"${clean(v).replaceAll('"','""')}"`;const csv=['\ufeff'+fields.join(','),...state.people.map(p=>fields.map(f=>cell(p[f])).join(','))].join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`openai-talent-pipeline-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);};
   render();
 })();
