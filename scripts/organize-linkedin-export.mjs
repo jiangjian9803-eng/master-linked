@@ -121,7 +121,8 @@ const syncPayload={
     relationshipStatus:p.relationshipStatus,connectedOn:p.connectedOn||'',
     inviteDirection:p.inviteDirection||'',inviteSentAt:p.inviteSentAt||'',
     sentMessages:p.sentMessages||0,receivedMessages:p.receivedMessages||0,
-    lastMessageAt:p.lastMessageAt||'',lastVerified:'2026-10-01',confidence:'review'
+    lastMessageAt:p.lastMessageAt||'',lastVerified:'2026-10-01',confidence:'review',
+    invitationSent:p.inviteDirection==='OUTGOING',connectionConfirmed:Boolean(p.connectedOn),replyConfirmed:p.receivedMessages>0
   }))
 };
 fs.writeFileSync(path.join(outputDir,'linkedin-sync.js'),`window.MASTER_LINKED_LINKEDIN_SYNC=${JSON.stringify(syncPayload)};\n`);
@@ -134,8 +135,8 @@ const sharedPayload={
   generatedAt:syncPayload.generatedAt,
   summary:syncPayload.summary,
   connections:syncPayload.connections,
-  targetPeople:syncPayload.targetPeople.map(({name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence})=>({
-    name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence
+  targetPeople:syncPayload.targetPeople.map(({name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence,invitationSent,connectionConfirmed,replyConfirmed})=>({
+    name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence,invitationSent,connectionConfirmed,replyConfirmed
   }))
 };
 fs.writeFileSync(path.join(sharedDir,'target-company-sync.js'),`window.MASTER_LINKED_LINKEDIN_SYNC=${JSON.stringify(sharedPayload)};\n`);
