@@ -132,10 +132,8 @@ const sharedDir=path.resolve(projectRoot,'shared-data');
 fs.mkdirSync(sharedDir,{recursive:true});
 const sharedPayload={
   generatedAt:syncPayload.generatedAt,
-  summary:{
-    targetCompanies:syncPayload.summary.targetCompanies,
-    targetPeople:syncPayload.targetPeople.length
-  },
+  summary:syncPayload.summary,
+  connections:syncPayload.connections,
   targetPeople:syncPayload.targetPeople.map(({name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence})=>({
     name,company,team,title,linkedin,relationshipStatus,lastVerified,confidence
   }))
