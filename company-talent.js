@@ -261,5 +261,5 @@
   }
 
   // Keep legacy OpenAI reference matching without making an unverified team assignment.
-  state.people.forEach(p=>{if(p.linkedin&&window.OPENAI_REFERENCE_URLS?.has(canonicalLinkedIn(p.linkedin))){p.companyId='openai';const note='OpenAI 身份依据：LinkedIn URL 命中既有公开参考库';if(!clean(p.notes).includes(note))p.notes=[p.notes,note].filter(Boolean).join('\n');}});save();selectView('all');
+  state.people.forEach(p=>{if(p.linkedin&&window.OPENAI_REFERENCE_URLS?.has(canonicalLinkedIn(p.linkedin))){p.companyId='openai';const note='OpenAI 身份依据：LinkedIn URL 命中既有公开参考库';if(!clean(p.notes).includes(note))p.notes=[p.notes,note].filter(Boolean).join('\n');}});save();if('scrollRestoration' in history)history.scrollRestoration='manual';selectView('all');window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),0);
 })();
