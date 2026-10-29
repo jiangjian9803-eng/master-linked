@@ -269,7 +269,7 @@
 
   // Published baseline fallback: keeps critical Microsoft profiles available even
   // when a browser has an older local cache or cannot load the sync export.
-  const publishedBaselinePeople=[{name:'Baolin Peng',companyId:'microsoft',teamId:'microsoft-msr-americas',title:'Principal Researcher and Research Manager',highestDegree:'PhD',highestDegreeSchool:'The Chinese University of Hong Kong',workYears:7,formerCompanies:'Tencent Americas',linkedin:'https://www.linkedin.com/in/baolin-peng-6299266b',focus:'LLM 智能体、复杂推理与规划',confidence:'verified',sourceUrl2:'https://www.microsoft.com/en-us/research/people/baolinpeng/',backgroundVerifiedAt:'2026-10-28'}];
+  const publishedBaselinePeople=[{name:'Baolin Peng',companyId:'microsoft',teamId:'microsoft-msr-americas',title:'Principal Researcher and Research Manager',highestDegree:'PhD',highestDegreeSchool:'The Chinese University of Hong Kong',workYears:7,formerCompanies:'Tencent Americas',linkedin:'https://www.linkedin.com/in/baolin-peng-6299266b',focus:'LLM 智能体、复杂推理与规划',confidence:'verified',sourceUrl2:'https://www.microsoft.com/en-us/research/people/baolinpeng/',backgroundVerifiedAt:'2026-10-28',invitationSent:true,connectionConfirmed:true,replyConfirmed:false,connectedOn:'14 Sep 2026',inviteSentAt:'9/8/26, 1:09 PM'}];
   publishedBaselinePeople.forEach(seed=>{const existing=state.people.find(p=>p.linkedin===seed.linkedin);if(existing)Object.assign(existing,seed);else state.people.push({id:uuid(),interactions:[],contactHistory:[],...seed});});
 
   // Keep legacy OpenAI reference matching without making an unverified team assignment.
