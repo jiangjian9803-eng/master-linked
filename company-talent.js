@@ -267,6 +267,11 @@
     if(existing){const preservedTeam=existing.userEdited&&existing.teamId?existing.teamId:'';Object.assign(existing,data);if(preservedTeam)existing.teamId=preservedTeam;}else state.people.push({id:uuid(),interactions:[],...data});
   }
 
+  // Published baseline fallback: keeps critical Microsoft profiles available even
+  // when a browser has an older local cache or cannot load the sync export.
+  const publishedBaselinePeople=[{name:'Baolin Peng',companyId:'microsoft',teamId:'microsoft-msr-americas',title:'Principal Researcher and Research Manager',highestDegree:'PhD',highestDegreeSchool:'The Chinese University of Hong Kong',workYears:7,formerCompanies:'Tencent Americas',linkedin:'https://www.linkedin.com/in/baolin-peng-6299266b',focus:'LLM 智能体、复杂推理与规划',confidence:'verified',sourceUrl2:'https://www.microsoft.com/en-us/research/people/baolinpeng/',backgroundVerifiedAt:'2026-10-28'}];
+  publishedBaselinePeople.forEach(seed=>{const existing=state.people.find(p=>p.linkedin===seed.linkedin);if(existing)Object.assign(existing,seed);else state.people.push({id:uuid(),interactions:[],contactHistory:[],...seed});});
+
   // Keep legacy OpenAI reference matching without making an unverified team assignment.
   state.people.forEach(p=>{if(p.linkedin&&window.OPENAI_REFERENCE_URLS?.has(canonicalLinkedIn(p.linkedin))){p.companyId='openai';const note='OpenAI 身份依据：LinkedIn URL 命中既有公开参考库';if(!clean(p.notes).includes(note))p.notes=[p.notes,note].filter(Boolean).join('\n');}});save();if('scrollRestoration' in history)history.scrollRestoration='manual';selectView('all');window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),0);
 })();
